@@ -35,9 +35,6 @@ class __LinuxPartition(Partition):
     def get_dev_parent(self):
         return self.__parent
 
-    def __str__(self):
-        return 'Partition {} with label {} mount in {}'.format(self.__name, self.__label, self.__mount)
-
 
 class __LinuxFlashDevice(FlashDevice):
     def __init__(self, name=None, partitions=None, vendor=None, model=None):
@@ -68,20 +65,18 @@ class __LinuxFlashDevice(FlashDevice):
 
         return 'N/A'
 
-    def get_device_file(self):
+    def get_dev_file(self):
         return '/dev/' + self.__name
 
-    def __str__(self):
-        return "Device {} {}".format(self.get_device_file(), self.get_title())
 
 def __get_block_devices():
     """
     :rtype: dict
     """
     out = check_output(args=["lsblk",
-                       "-J",
-                       "--output=NAME,VENDOR,MODEL,MOUNTPOINT,LABEL,STATE,RM,TYPE,SIZE"],
-                 )
+                             "-J",
+                             "--output=NAME,VENDOR,MODEL,MOUNTPOINT,LABEL,STATE,RM,TYPE,SIZE"],
+                       )
     devices = json.loads(out.decode())
     if "blockdevices" in devices:
         return devices['blockdevices']
@@ -92,9 +87,9 @@ def __get_block_devices():
 def __build_device(device):
     partitions = []
     flash_device = __LinuxFlashDevice(name=device.get('name'),
-                              partitions=partitions,
-                              model=device.get('model'),
-                              vendor=device.get('vendor'))
+                                      partitions=partitions,
+                                      model=device.get('model'),
+                                      vendor=device.get('vendor'))
     if "children" in device:
         for child in device['children']:
             if "type" in child and child['type'] == "part":
@@ -113,8 +108,8 @@ def get_available_devices():
     available_devices = []
     for device in block_devices:
         removable = device.get("rm")
-        type = device.get("type")
-        if not type or type != "disk" or not removable or removable != "1":
+        type_dev = device.get("type")
+        if not type_dev or type_dev != "disk" or not removable or removable != "1":
             continue
         available_devices.append(__build_device(device))
     return available_devices

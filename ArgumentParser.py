@@ -18,7 +18,7 @@ class RemovableDevicePath(object):
 
     def __call__(self, param):
         for device in self.__devices:
-            if device.get_device_file() == param:
+            if device.get_dev_file() == param:
                 return device
         raise ValueError('Argument "{}" is not removable device'.format(param))
 
@@ -42,7 +42,10 @@ class PartitionValidator(object):
 
 class RemovablePartitionPath(PartitionValidator):
     def __init__(self, available_devices):
-        super().__init__(available_devices, lambda p: p.get_dev_file(), 'removable device partition')
+        super().__init__(
+            available_devices,
+            lambda p: p.get_dev_file(),
+            'removable device partition')
 
     def __str__(self):
         return 'RemovablePartitionPath'
@@ -62,6 +65,6 @@ def parse(removable_devices):
     arg_parser.add_argument('-d', '--dest-device', dest='dest_device', type=RemovableDevicePath(removable_devices))
     arg_parser.add_argument('-p', '--dest-part', dest='dest_part', type=RemovablePartitionPath(removable_devices))
     arg_parser.add_argument('-m', '--dest-mount', dest='dest_part', type=RemovablePartitionMountPoint(removable_devices))
-    arg_parser.add_argument('--version', dest='show_version', action='store_const',const=True)
+    arg_parser.add_argument('--version', dest='show_version', action='store_const', const=True)
 
     return arg_parser.parse_args()
