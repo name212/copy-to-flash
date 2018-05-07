@@ -4,3 +4,11 @@ class UnsupportedPlatform(Exception):
 
 class NotFoundPartition(Exception):
     pass
+
+
+class PartitionHaveDirectory(Exception):
+    pass
+
+
+class NotFilesInSource(Exception):
+    pass

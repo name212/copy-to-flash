@@ -1,15 +1,14 @@
-import os
 import platform
 
-from ArgumentParser import parse as parse_argument
 from Exceptions import UnsupportedPlatform
 from console.ConsoleFactory import ConsoleFactory
-from PartitionChoiser import get_destination_partition
+from media.MusicFilter import MusicFileFilter
+from console.ConsoleArguments import ConsoleArguments
+from MusicCopier import MusicCopier
+from platforms.PythonDirectory import PythonDirectory
+
 
 _VERSION = "0.0.1"
-_EXIT_CODES = {
-    'NORMAL': 0
-}
 
 
 def get_available_getter():
@@ -21,25 +20,30 @@ def get_available_getter():
     raise UnsupportedPlatform(sys)
 
 
-def get_files_list(dir_path, filter_path):
-    paths = []
-    for dir_name, dirs, files in os.walk(dir_path, followlinks=True):
-        for file in files:
-            path = os.path.join(dir_name, file)
-            info = filter_path(path)
-            if info:
-                paths.append(info)
-    return paths
-
-
 if __name__ == "__main__":
     factory = ConsoleFactory()
     controller = factory.get_controller()
     get_available_devices = get_available_getter()
     available_devices = get_available_devices()
-    args = parse_argument(available_devices)
-    if args.show_version:
-        factory.get_view().show_version(_VERSION, lambda: exit(_EXIT_CODES['NORMAL']))
+    args = ConsoleArguments(
+        removable_devices=available_devices,
+        controller=controller,
+        version_str=_VERSION
+    )
+    dest = args.get_destination()
+    dest = PythonDirectory(dest.get_mount())
+    view = factory.get_view()
 
-    dest = get_destination_partition(available_devices, args, lambda parts: controller.choice_dest_partition(parts))
-    print(dest)
+    def on_delete_print(p):
+        if args.is_verbose():
+            view.show_deleted(p)
+
+    copier = MusicCopier(
+        source_dir=args.get_source(),
+        dest_dir=dest,
+        filter_obj=MusicFileFilter(),
+        on_progress=lambda p, fn, a: view.show_progress(p, fn, a),
+        on_delete=on_delete_print
+    )
+
+    copier.run()

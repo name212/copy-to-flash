@@ -1,12 +1,19 @@
-import os
 import argparse
+
+
+from Arguments import Arguments
+from platforms.PythonDirectory import PythonDirectory
+from PartitionChoiser import get_destination_partition
 
 
 class DirParameter(object):
     def __call__(self, param):
-        if not os.path.exists(param) or not os.path.isdir(param):
+        try:
+            directory = PythonDirectory(param)
+        except:
             raise ValueError('Argument "{}" is not dir'.format(param))
-        return param
+
+        return directory
 
     def __str__(self):
         return 'DirParameter'
@@ -59,12 +66,29 @@ class RemovablePartitionMountPoint(PartitionValidator):
         return 'RemovablePartitionMountPoint'
 
 
-def parse(removable_devices):
-    arg_parser = argparse.ArgumentParser(description='Flash copy')
-    arg_parser.add_argument('-s', '--source-dir', dest='source_dir', type=DirParameter())
-    arg_parser.add_argument('-d', '--dest-device', dest='dest_device', type=RemovableDevicePath(removable_devices))
-    arg_parser.add_argument('-p', '--dest-part', dest='dest_part', type=RemovablePartitionPath(removable_devices))
-    arg_parser.add_argument('-m', '--dest-mount', dest='dest_part', type=RemovablePartitionMountPoint(removable_devices))
-    arg_parser.add_argument('--version', dest='show_version', action='store_const', const=True)
+class ConsoleArguments(Arguments):
+    def __init__(self, removable_devices, controller, version_str):
+        arg_parser = argparse.ArgumentParser(description='Flash copy')
+        arg_parser.add_argument('-s', '--source-dir', dest='source_dir', type=DirParameter())
+        arg_parser.add_argument('-d', '--dest-device', dest='dest_device', type=RemovableDevicePath(removable_devices))
+        arg_parser.add_argument('-p', '--dest-part', dest='dest_part', type=RemovablePartitionPath(removable_devices))
+        arg_parser.add_argument('-m', '--dest-mount', dest='dest_part',
+                                type=RemovablePartitionMountPoint(removable_devices))
+        arg_parser.add_argument('--version', dest='show_version', action='version',
+                                version='Version {}'.format(version_str))
+        arg_parser.add_argument('-v', '--verbose', dest='verbose', action='store_const', const=True)
+        self.__args = arg_parser.parse_args()
+        self.__part = get_destination_partition(
+            removable_devices,
+            self.__args,
+            lambda parts: controller.choice_dest_partition(parts)
+        )
 
-    return arg_parser.parse_args()
+    def get_destination(self):
+        return self.__part
+
+    def is_verbose(self):
+        return self.__args.verbose
+
+    def get_source(self):
+        return self.__args.source_dir

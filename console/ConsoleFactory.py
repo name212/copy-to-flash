@@ -4,8 +4,19 @@ from View import View
 
 
 class _ConsoleView(View):
+    def show_deleted(self, path):
+        print("Delete {}".format(path), flush=True)
+
+    def show_progress(self, percent, file_num, count):
+        if percent == 0:
+            print('Copy files ({}):'.format(count), flush=True)
+        print("{}({}/{})".format(percent, file_num, count), end=' ', flush=True)
+        if percent == 100:
+            print('', flush=True)
+            print('Done!', flush=True)
+
     def show_version(self, version, on_show):
-        print("Version {}".format(version))
+        print("Version {}".format(version), flush=True)
         on_show()
 
 
