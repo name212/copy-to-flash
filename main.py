@@ -31,7 +31,7 @@ if __name__ == "__main__":
         version_str=_VERSION
     )
     dest = args.get_destination()
-    dest = PythonDirectory(dest.get_mount())
+    dest = PythonDirectory(dest.get_mount(), args.get_copier())
     view = factory.get_view()
 
     def on_delete_print(p):

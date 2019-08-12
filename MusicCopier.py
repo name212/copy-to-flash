@@ -17,7 +17,7 @@ class MusicCopier(object):
         files = self.__source.linear_files_list(self.__filter)
         if not files:
             raise NotFilesInSource()
-        self.__dest.clear_folder(self.__on_delete)
+        self.__dest.clear_folder(True, self.__on_delete)
         all_files = len(files)
         past_percent = 0
         i = 0

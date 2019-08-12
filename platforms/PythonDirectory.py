@@ -1,6 +1,7 @@
 import os
 import shutil
 from FileSystem import Directory, DirectoryHaveSubDirs
+from Copier import SimpleCopier
 
 
 def _empty(file):
@@ -8,10 +9,17 @@ def _empty(file):
 
 
 class PythonDirectory(Directory):
-    def __init__(self, path):
+    def __init__(self, path, copier=None):
         if not os.path.exists(path) or not os.path.isdir(path):
             raise Exception("{} is not dir".format(path))
         self.__path = path
+        if not copier:
+            self._copier = SimpleCopier()
+        else:
+            self._copier = copier
+
+    def set_copier(self, copier):
+        self._copier = copier
 
     def linear_files_list(self, filter_path):
         for dir_name, dirs, files in os.walk(self.__path, followlinks=True):
@@ -38,4 +46,4 @@ class PythonDirectory(Directory):
             break
 
     def copy_here(self, path):
-        shutil.copy(path, self.__path)
+        self._copier.copy(path, self.__path)
