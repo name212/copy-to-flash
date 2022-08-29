@@ -2,7 +2,7 @@ import platform
 
 from Exceptions import UnsupportedPlatform
 from console.ConsoleFactory import ConsoleFactory
-from media.MusicFilter import MusicFileFilter
+from src.copy_to_flash.source.MusicTrackSorter import MusicFileFilter
 from console.ConsoleArguments import ConsoleArguments
 from MusicCopier import MusicCopier
 from platforms.PythonDirectory import PythonDirectory

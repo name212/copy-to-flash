@@ -10,5 +10,4 @@ class PartitionHaveDirectory(Exception):
     pass
 
 
-class NotFilesInSource(Exception):
-    pass
+
