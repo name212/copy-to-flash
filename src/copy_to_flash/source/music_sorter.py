@@ -1,7 +1,8 @@
+from typing import List
+
 from pymediainfo import MediaInfo
 from operator import itemgetter
-from source.DirSource import Sorter
-from typing import List
+from .dir import Sorter
 
 
 def _name_filter(track):

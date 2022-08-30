@@ -1,5 +1,6 @@
 import shutil
-from copy.Controller import CopyAlgo
+
+from ..copier import CopyAlgo
 
 class SimpleCopier(CopyAlgo):
     def copy(self, source_file_path: str, destination_dir_path: str):

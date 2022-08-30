@@ -1,20 +1,16 @@
 import argparse
 
-
-from Arguments import Arguments
-from platforms.PythonDirectory import PythonDirectory
-from PartitionChoiser import get_destination_partition
-from Copier import SimpleCopier, LimitDirSizeCopier
+from ..copier import check_is_dir_exists
 
 
 class DirParameter(object):
     def __call__(self, param):
         try:
-            directory = PythonDirectory(param)
+             check_is_dir_exists(param)
         except:
             raise ValueError('Argument "{}" is not dir'.format(param))
 
-        return directory
+        return param
 
     def __str__(self):
         return 'DirParameter'
@@ -90,7 +86,7 @@ class CopierParam(object):
         return 'CopierType'
 
 
-class ConsoleArguments(Arguments):
+class ConsoleArguments(object):
     def __init__(self, removable_devices, controller, version_str):
         arg_parser = argparse.ArgumentParser(description='Flash copy')
         arg_parser.add_argument('-s', '--source-dir', dest='source_dir', type=DirParameter())

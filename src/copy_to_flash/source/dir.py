@@ -1,7 +1,9 @@
 from typing import List
-from fs.dir import check_is_dir_exists
-from copy.Controller import Source
 import os
+
+from ..copier import check_is_dir_exists
+from src.copy_to_flash.copier import Source
+
 
 class Sorter(object):
     def process_path(self, path: str):

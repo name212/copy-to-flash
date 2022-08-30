@@ -1,9 +1,9 @@
 import platform
 
 from Exceptions import UnsupportedPlatform
-from console.ConsoleFactory import ConsoleFactory
-from src.copy_to_flash.source.MusicTrackSorter import MusicFileFilter
-from console.ConsoleArguments import ConsoleArguments
+from src.copy_to_flash.console.controller import ConsoleFactory
+from src.copy_to_flash.source.music_sorter import MusicFileFilter
+from src.copy_to_flash.console.arguments import ConsoleArguments
 from MusicCopier import MusicCopier
 from platforms.PythonDirectory import PythonDirectory
 

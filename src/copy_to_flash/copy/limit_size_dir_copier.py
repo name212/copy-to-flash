@@ -1,6 +1,8 @@
-from copy.Controller import CopyAlgo
 import shutil
 import os
+
+from ..copier import CopyAlgo
+
 
 class _NumberDirNameGenerator:
     def __init__(self, start_from=0, max_iters=100):

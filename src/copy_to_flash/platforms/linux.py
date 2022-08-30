@@ -1,4 +1,4 @@
-from src.copy_to_flash.partition.FlashDevice import Partition, FlashDevice
+from ..device import Partition, FlashDevice
 import json
 from subprocess import check_output
 
