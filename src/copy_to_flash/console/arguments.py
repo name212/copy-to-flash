@@ -1,6 +1,14 @@
 import argparse
+from typing import List, Union
 
-from ..copier import check_is_dir_exists
+from src.copy_to_flash.source.dir import DirSource, MusicDirSource
+from src.copy_to_flash.source.music_sorter import MusicTrackSorter
+
+from .controller import get_partition_from_device, choice_dest_partition
+from ..copier import CopyAlgo, Source, check_is_dir_exists
+from ..device import Partition, FlashDevice
+from ..copy.limit_size_dir_copier import LimitDirSizeCopier
+from ..copy.simple_copier import SimpleCopier
 
 
 class DirParameter(object):
@@ -31,7 +39,7 @@ class RemovableDevicePath(object):
 
 
 class PartitionValidator(object):
-    def __init__(self, available_devices, charact_produser, message='unknown'):
+    def __init__(self, available_devices: List[FlashDevice], charact_produser, message='unknown'):
         self.__devices = available_devices
         self.__func = charact_produser
         self.__message = message
@@ -85,12 +93,33 @@ class CopierParam(object):
     def __str__(self):
         return 'CopierType'
 
+class _Args(object):
+    def __init__(self):
+        self.source_dir: str = ""
+        self.copier: CopyAlgo = None
+        self.dest_device: FlashDevice = None
+        self.dest_part: Partition = None
+
+def get_destination_partition(removable_devices: List[FlashDevice], prog_args: _Args) -> Partition:
+    # have destination partition. return it
+    if prog_args.dest_part:
+        return prog_args.dest_part
+    # have removable device. show count partitions
+    if prog_args.dest_device:
+        return get_partition_from_device(prog_args.dest_device)
+
+    # not partition or device: user choice from all partitions
+    all_parts: List[Partition] = []
+    for d in removable_devices:
+        all_parts += d.get_partitions()
+    return choice_dest_partition(all_parts)
+
 
 class ConsoleArguments(object):
-    def __init__(self, removable_devices, controller, version_str):
+    def __init__(self, removable_devices:  List[Union[Partition, FlashDevice]], version_str):
         arg_parser = argparse.ArgumentParser(description='Flash copy')
         arg_parser.add_argument('-s', '--source-dir', dest='source_dir', type=DirParameter())
-        arg_parser.add_argument('-c', '--copier', dest='copier', nargs='+', default=None)
+        arg_parser.add_argument('-c', '--copier', dest='copier_with_args', nargs='+', default=None)
         arg_parser.add_argument('-d', '--dest-device', dest='dest_device', type=RemovableDevicePath(removable_devices))
         arg_parser.add_argument('-p', '--dest-part', dest='dest_part', type=RemovablePartitionPath(removable_devices))
         arg_parser.add_argument('-m', '--dest-mount', dest='dest_part',
@@ -98,22 +127,21 @@ class ConsoleArguments(object):
         arg_parser.add_argument('--version', dest='show_version', action='version',
                                 version='Version {}'.format(version_str))
         arg_parser.add_argument('-v', '--verbose', dest='verbose', action='store_const', const=True)
-        self.__args = arg_parser.parse_args()
+        self.__args  = arg_parser.parse_args()
         self.__args.copier = CopierParam()(self.__args.copier)
         self.__part = get_destination_partition(
             removable_devices,
-            self.__args,
-            lambda parts: controller.choice_dest_partition(parts)
+            self.__args
         )
 
-    def get_copier(self):
+    def get_copier(self) -> CopyAlgo:
         return self.__args.copier
 
-    def get_destination(self):
+    def get_destination(self) -> Partition:
         return self.__part
 
-    def is_verbose(self):
+    def is_verbose(self) -> bool:
         return self.__args.verbose
 
-    def get_source(self):
-        return self.__args.source_dir
+    def get_source(self) -> Source:
+        return MusicDirSource(self.__args.source_dir)

@@ -1,6 +1,7 @@
 from ..device import Partition, FlashDevice
 import json
 from subprocess import check_output
+from typing import List
 
 
 class __LinuxPartition(Partition):
@@ -84,7 +85,7 @@ def __get_block_devices():
     raise Exception("Not found block devices")
 
 
-def __build_device(device):
+def __build_device(device: dict) -> FlashDevice:
     partitions = []
     flash_device = __LinuxFlashDevice(name=device.get('name'),
                                       partitions=partitions,
@@ -103,7 +104,7 @@ def __build_device(device):
     return flash_device
 
 
-def get_available_devices():
+def get_available_devices() -> List[FlashDevice]:
     block_devices = __get_block_devices()
     available_devices = []
     for device in block_devices:

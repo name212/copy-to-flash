@@ -1,6 +1,8 @@
 from typing import List
 import os
 
+from src.copy_to_flash.source.music_sorter import MusicTrackSorter
+
 from ..copier import check_is_dir_exists
 from src.copy_to_flash.copier import Source
 
@@ -26,3 +28,7 @@ class DirSource(Source):
                 self.__sorter.process_path(path)
 
         return self.__sorter.sort()
+
+class MusicDirSource(DirSource):
+    def __init__(self, dir_path: str):
+        super().__init__(dir_path, MusicTrackSorter())
