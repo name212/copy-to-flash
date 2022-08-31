@@ -1,6 +1,6 @@
 from typing import List
 
-from ..device import Partition, FlashDevice
+from ..device import FlashDevice, Partition
 
 
 class NotFoundPartition(Exception):

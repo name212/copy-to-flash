@@ -1,8 +1,7 @@
 from typing import List
 
-from src.copy_to_flash.console.input import read_yes_no
-
-from ..copier import CleanHandler, ProgressTick
+from ..copier import CleanHandler, CopyHandler, ProgressTick
+from .input import read_yes_no
 
 
 class ConsoleClearHandler(CleanHandler):
@@ -21,6 +20,13 @@ class ConsoleClearHandler(CleanHandler):
         if self.verbose:
             print("{} deleted".format(tick.file))
 
-    def on_finish(self):
+    def on_finish(self, total: int):
         if self.verbose:
-            print("Destination device was cleaned")
+            print("Destination device was cleaned. Removed {}".format(total))
+
+class ConsoleCopyHandler(CopyHandler):
+    def on_process(self, tick: ProgressTick):
+        print("[{}/{} ({}%)] {}".format(tick.file_index, tick.total_files, tick.percent(), tick.file))
+    
+    def on_finish(self, total: int):
+        print("[{t}/{t}] (100%)".format(t=total))

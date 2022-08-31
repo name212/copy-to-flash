@@ -2,7 +2,7 @@ from typing import List
 
 from pymediainfo import MediaInfo
 from operator import itemgetter
-from .dir import Sorter
+from .dir import DirSource, Sorter
 
 
 def _name_filter(track):
@@ -45,3 +45,7 @@ class MusicTrackSorter(Sorter):
     def sort(self) -> List[str]:
         self.__path_list.sort(key=itemgetter('sort'), reverse=self.__reverse)
         return [p['path'] for p in self.__path_list]
+
+class MusicDirSource(DirSource):
+    def __init__(self, dir_path: str):
+        super().__init__(dir_path, MusicTrackSorter())

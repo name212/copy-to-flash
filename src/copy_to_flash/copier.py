@@ -1,6 +1,6 @@
+import os
 from math import floor
 from typing import List
-import os
 
 
 def check_is_dir_exists(dir: str):
@@ -37,17 +37,17 @@ class ProcessHandler(object):
     def on_process(self, tick: ProgressTick):
         pass
 
+    def on_finish(self, total: int):
+        pass
+
 class CleanHandler(ProcessHandler):
     def on_before_clear(self, files: List[str]) -> bool:
         # do clear
         return True
-    def on_finish(self):
-        pass
 
 
 class CopyHandler(ProcessHandler):
-    def on_finish(self):
-        pass
+    pass
 
 
 class CopyController(object):
