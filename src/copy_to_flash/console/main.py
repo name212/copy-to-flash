@@ -1,12 +1,10 @@
 import platform
 from typing import List
 
-from src.copy_to_flash.device import FlashDevice
-
-from .arguments import ConsoleArguments
-
 from ..copier import CopyController
-
+from ..device import FlashDevice
+from .arguments import ConsoleArguments
+from .handlers import ConsoleClearHandler, ConsoleCopyHandler
 
 _VERSION = "0.1.0"
 
@@ -31,5 +29,8 @@ if __name__ == "__main__":
     )
 
     copier = CopyController(args.get_copier())
+
+    copier.set_clear_handler(ConsoleClearHandler(args.is_verbose()))
+    copier.set_copy_handler(ConsoleCopyHandler())
 
     copier.copy(args.get_source(), args.get_destination())

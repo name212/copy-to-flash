@@ -1,14 +1,12 @@
 import argparse
-from typing import List, Union
+from typing import List
 
-from src.copy_to_flash.source.dir import DirSource, MusicDirSource
-from src.copy_to_flash.source.music_sorter import MusicTrackSorter
-
-from .controller import get_partition_from_device, choice_dest_partition
 from ..copier import CopyAlgo, Source, check_is_dir_exists
-from ..device import Partition, FlashDevice
 from ..copy.limit_size_dir_copier import LimitDirSizeCopier
 from ..copy.simple_copier import SimpleCopier
+from ..device import FlashDevice, Partition
+from ..source.dir import MusicDirSource
+from .input import choice_dest_partition, get_partition_from_device
 
 
 class DirParameter(object):
@@ -116,7 +114,7 @@ def get_destination_partition(removable_devices: List[FlashDevice], prog_args: _
 
 
 class ConsoleArguments(object):
-    def __init__(self, removable_devices:  List[Union[Partition, FlashDevice]], version_str):
+    def __init__(self, removable_devices:  List[FlashDevice], version_str):
         arg_parser = argparse.ArgumentParser(description='Flash copy')
         arg_parser.add_argument('-s', '--source-dir', dest='source_dir', type=DirParameter())
         arg_parser.add_argument('-c', '--copier', dest='copier_with_args', nargs='+', default=None)
