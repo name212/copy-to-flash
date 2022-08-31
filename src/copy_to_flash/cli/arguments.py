@@ -5,7 +5,7 @@ from ..copier import CopyAlgo, Source, check_is_dir_exists
 from ..copy.limit_size_dir_copier import LimitDirSizeCopier
 from ..copy.simple_copier import SimpleCopier
 from ..device import FlashDevice, Partition
-from ..source.dir import MusicDirSource
+from ..source.music_sorter import MusicDirSource
 from .input import choice_dest_partition, get_partition_from_device
 
 

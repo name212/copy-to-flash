@@ -1,7 +1,8 @@
-from ..device import Partition, FlashDevice
 import json
 from subprocess import check_output
 from typing import List
+
+from ..device import Partition, FlashDevice
 
 
 class __LinuxPartition(Partition):
