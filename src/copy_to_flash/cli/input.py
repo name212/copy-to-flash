@@ -1,10 +1,19 @@
+from typing import List
+
 from ..device import Partition, FlashDevice
 
-from typing import List
 
 class NotFoundPartition(Exception):
     pass
 
+def read_yes_no() -> bool:
+    while True :
+        a = input("y/n:")
+        a = a.lower()
+        if a == "y":
+            return True
+        elif a == "n":
+           return False
 
 def __read_partition_number(count_parts: int) -> int:
     num = None
