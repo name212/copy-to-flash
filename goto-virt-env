@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+export WORKON_HOME=$PWD/.virtualenvs
+export PROJECT_HOME=$PWD
+export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
+source ~/.local/bin/virtualenvwrapper.sh
+
+if ! workon | grep run_env; then
+  mkvirtualenv -r requirements.txt run_env
+fi
+
+workon run_env
