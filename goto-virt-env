@@ -6,8 +6,21 @@ export PROJECT_HOME=$PWD
 export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
 source ~/.local/bin/virtualenvwrapper.sh
 
-if ! workon | grep run_env; then
+if ! workon | grep -q run_env; then
   mkvirtualenv -r requirements.txt run_env
 fi
 
 workon run_env
+
+alias d=deactivate
+
+REQ_PYTHON_MAJ=3
+REQ_PYTHON_MINOR=8
+
+RED_COLOR='\033[0;31m'
+NO_COLOR='\033[0m' 
+
+if ! python -c "import sys; sys.exit(0) if sys.version_info.major == $REQ_PYTHON_MAJ and sys.version_info.minor >= $REQ_PYTHON_MINOR else sys.exit(1)"; then
+  >&2 echo -e "${RED_COLOR}ERROR${NO_COLOR} Require pyhon >= ${REQ_PYTHON_MAJ}.${REQ_PYTHON_MINOR} Exit from virtual env"
+  deactivate
+fi
