@@ -1,13 +1,10 @@
 import argparse
-from typing import List, Optional
+from typing import List
 
-from copier import CopyAlgo, Source, check_is_dir_exists
+from copier import CopyAlgo, check_is_dir_exists
 from copiers.limit_size_dir_copier import LimitDirSizeCopier
 from copiers.simple_copier import SimpleCopier
 from device import FlashDevice, Partition
-from source.music_sorter import MusicDirSource
-from .input import choice_dest_partition, get_partition_from_device
-
 
 class DirParameter(object):
     def __call__(self, param):
@@ -97,24 +94,16 @@ class Args(object):
         self.copier: CopyAlgo = None
         self.dest_part: Partition = None
         self.verbose: bool = False
-
-def get_destination_partition(removable_devices: List[FlashDevice], prog_args: Args) -> Optional[Partition]:
-    # have destination partition. return it
-    if prog_args.dest_part:
-        return prog_args.dest_part
-    # have removable device. show count partitions
-    if prog_args.dest_device:
-        return get_partition_from_device(prog_args.dest_device)
+        self.dest_device = None
     
-    if not removable_devices:
-        return None
-
-    # not partition or device: user choice from all partitions
-    all_parts: List[Partition] = []
-    for d in removable_devices:
-        all_parts += d.get_partitions()
-    return choice_dest_partition(all_parts)
-
+    def __str__(self) -> str:
+        return "verbose={} copier={} source_dir={} dest_part={} dest_device={}".format(
+            self.verbose,
+            self.copier,
+            self.source_dir,
+            self.dest_part,
+            self.dest_device,
+        )
 
 class ConsoleArguments(object):
     def __init__(self, removable_devices:  List[FlashDevice], version_str):
@@ -132,13 +121,11 @@ class ConsoleArguments(object):
 
         self.args = Args()
 
-        self.args.dest_part = get_destination_partition(
-            removable_devices,
-            self.__args
-        )
         self.args.copier = self.__args.copier
         self.args.source_dir = self.__args.source_dir
         self.args.verbose = self.__args.verbose
+        self.args.dest_part = self.__args.dest_device
+        self.args.dest_part = self.__args.dest_part
 
     def get_args(self) -> Args:
         return self.args

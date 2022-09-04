@@ -1,16 +1,33 @@
-from typing import List
+import logging
+from typing import List, Optional
 
 from copier import CopyAlgo, CopyController
 from copiers.limit_size_dir_copier import LimitDirSizeCopier
 from .handlers import ConsoleClearHandler, ConsoleCopyHandler
 from source.music_sorter import MusicDirSource
-from .arguments import ConsoleArguments
-from device import FlashDevice
+from .arguments import ConsoleArguments, Args
+from device import FlashDevice, Partition
+from .input import choice_dest_partition, get_partition_from_device
+
 
 class ArgumentError(Exception):
     def __init__(self, msg: str) -> None:
         super().__init__(msg)
         self.clause = msg
+
+def _get_destination_partition(removable_devices: List[FlashDevice], prog_args: Args) -> Optional[Partition]:
+    # have destination partition. return it
+    if prog_args.dest_part:
+        return prog_args.dest_part
+    # have removable device. show count partitions
+    if prog_args.dest_device:
+        return get_partition_from_device(prog_args.dest_device)
+    
+    # not partition or device: user choice from all partitions
+    all_parts: List[Partition] = []
+    for d in removable_devices:
+        all_parts += d.get_partitions()
+    return choice_dest_partition(all_parts)
 
 def run(available_devices: List[FlashDevice], version: str):
     args = ConsoleArguments(
@@ -18,20 +35,47 @@ def run(available_devices: List[FlashDevice], version: str):
         version_str=version
     ).get_args()
 
-    if not args.source_dir or args.source_dir:
+    log = logging.getLogger()
+    log.setLevel(logging.WARN)
+
+    if args.verbose:
+        log.setLevel(logging.DEBUG)
+
+    log.debug("arguments={}", args)
+
+    if not available_devices:
+        raise ArgumentError("")
+
+    if not args.source_dir or args.source_dir == "":
         raise ArgumentError("source is required")
     
+    dest_dir = ""
+
     if not args.dest_part:
-        raise ArgumentError("destination partition is required")
+        part = _get_destination_partition(available_devices, args)
+        if not part:
+            raise ArgumentError("destination partition is required")
+        log.debug("choiced part device: {} | {}".format(
+            part.get_label(),
+            part.get_dev_file(),
+        ))
+        dest_dir = part.get_mount()
     
+    log.debug("destinatin dir: {}", dest_dir)
+
     copier: CopyAlgo = args.copier
     if not copier:
         copier = LimitDirSizeCopier(max_files_in_dir=512)
+    
+    log.debug("copy algo {}", copier)
+
     source = MusicDirSource(args.source_dir)
+
+    exit(0)
 
     c = CopyController()
     c.set_copier(copier)
     c.set_clear_handler(ConsoleClearHandler(args.verbose))
     c.set_copy_handler(ConsoleCopyHandler())
 
-    copier.copy(source, args.dest_part)
+    copier.copy(source, dest_part)

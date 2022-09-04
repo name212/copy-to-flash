@@ -53,3 +53,6 @@ class LimitDirSizeCopier(CopyAlgo):
 
         shutil.copy(source_file_path, cur_dir_path)
         self._cur_files_in_sub_dir += 1
+
+    def __str__(self) -> str:
+        return "LimitDirSizeCopier({})".format(self._max)
