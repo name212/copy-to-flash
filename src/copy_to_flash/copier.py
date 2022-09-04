@@ -14,6 +14,11 @@ class NotFilesInSource(Exception):
 class DirectoryHaveSubDirs(Exception):
     pass
 
+class NotSource(Exception):
+    pass
+
+class NotCopier(Exception):
+    pass
 
 class CopyAlgo(object):
     def copy(self, source_file_path: str, destination_dir_path: str):
@@ -51,10 +56,15 @@ class CopyHandler(ProcessHandler):
 
 
 class CopyController(object):
-    def __init__(self, copier: CopyAlgo):
-        self.__copier = copier
+    def __init__(self):
+        self.__copier: CopyAlgo = None
         self.__clear_handler = CleanHandler()
         self.__copy_handler = CopyHandler()
+
+    def set_copier(self, copier: CopyAlgo):
+        if not copier:
+            return
+        self.__copier = copier
     
     def set_clear_handler(self, handler: CleanHandler):
         if not handler:
@@ -105,6 +115,11 @@ class CopyController(object):
 
 
     def copy(self, source: Source, destination_dir: str):
+        if not source:
+            raise NotSource()
+        if not self.__copier:
+            raise NotCopier()
+
         check_is_dir_exists(destination_dir)
         files = source.paths_in_order()
         if not files:

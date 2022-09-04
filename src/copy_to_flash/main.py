@@ -1,10 +1,8 @@
 import platform
 from typing import List
 
-from copier import CopyController
+from cli.run import ArgumentError, run as cli_run
 from device import FlashDevice
-from cli.arguments import ConsoleArguments
-from cli.handlers import ConsoleClearHandler, ConsoleCopyHandler
 
 _VERSION = "0.1.0"
 
@@ -23,14 +21,11 @@ def available_devices() -> List[FlashDevice]:
 
 if __name__ == "__main__":
     devices = available_devices()
-    args = ConsoleArguments(
-        removable_devices=devices,
-        version_str=_VERSION
-    )
+    try:
+        cli_run(devices, _VERSION)
+    except ArgumentError as e:
+        # todo gui here
+        raise e
+    except:
+        raise     
 
-    copier = CopyController(args.get_copier())
-
-    copier.set_clear_handler(ConsoleClearHandler(args.is_verbose()))
-    copier.set_copy_handler(ConsoleCopyHandler())
-
-    copier.copy(args.get_source(), args.get_destination())
