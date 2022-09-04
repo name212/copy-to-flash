@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from ..copier import Source, check_is_dir_exists
+from copier import Source, check_is_dir_exists
 
 
 class Sorter(object):

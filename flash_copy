@@ -9,6 +9,6 @@ if ! source ./start-virt-env --from-run; then
   exit 1
 fi
 
-python "src/${PACKAGE_NAME}/cli/main.py" $@
+python "src/${PACKAGE_NAME}/main.py" $@
 
 deactivate

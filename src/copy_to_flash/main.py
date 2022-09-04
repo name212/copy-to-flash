@@ -1,10 +1,10 @@
 import platform
 from typing import List
 
-from ..copier import CopyController
-from ..device import FlashDevice
-from .arguments import ConsoleArguments
-from .handlers import ConsoleClearHandler, ConsoleCopyHandler
+from copier import CopyController
+from device import FlashDevice
+from cli.arguments import ConsoleArguments
+from cli.handlers import ConsoleClearHandler, ConsoleCopyHandler
 
 _VERSION = "0.1.0"
 

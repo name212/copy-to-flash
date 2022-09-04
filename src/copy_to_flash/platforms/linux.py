@@ -2,7 +2,7 @@ import json
 from subprocess import check_output
 from typing import List
 
-from ..device import FlashDevice, Partition
+from device import FlashDevice, Partition
 
 
 class __LinuxPartition(Partition):

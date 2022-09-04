@@ -1,6 +1,6 @@
 from typing import List
 
-from ..copier import CleanHandler, CopyHandler, ProgressTick
+from copier import CleanHandler, CopyHandler, ProgressTick
 from .input import read_yes_no
 
 

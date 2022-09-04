@@ -1,7 +1,7 @@
 import shutil
 import os
 
-from ..copier import CopyAlgo
+from copier import CopyAlgo
 
 
 class _NumberDirNameGenerator:
