@@ -10,7 +10,7 @@ class ConsoleClearHandler(CleanHandler):
         self.verbose = verbose
 
     def on_before_clear(self, files: List[str]) -> bool:
-        print("Do you want clear destination before copy?")
+        print("Do you want clear destination before copy ({}) ?".format(len(files)))
         if self.verbose:
             for f in files:
                 print("\t{}".format(f))

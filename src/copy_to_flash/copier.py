@@ -9,9 +9,9 @@ def check_is_dir_exists(dir: str):
     if not os.path.exists(dir) or not os.path.isdir(dir):
         raise Exception("{} is not dir".format(dir))
 
+
 class NotFilesInSource(Exception):
     pass
-
 
 class DirectoryHaveSubDirs(Exception):
     pass
@@ -20,6 +20,9 @@ class NotSource(Exception):
     pass
 
 class NotCopier(Exception):
+    pass
+
+class CancelClearDestination(Exception):
     pass
 
 class CopyAlgo(object):
@@ -81,7 +84,7 @@ class CopyController(object):
     def __process_list(self, l: List[str], action, preprocessor: ProcessHandler):
         i = 0
         for f in l:
-            tick = ProgressTick(process_file=f, file_index=i, total=len(l))
+            tick = ProgressTick(process_file=f, file_index=i, total_files=len(l))
             preprocessor.on_process(tick)
             i = i + 1
             action(f)
@@ -91,36 +94,42 @@ class CopyController(object):
         files: List[str] = []
         dirs: List[str] = []
 
-        for dir_name, ds, fs in os.walk(dir_path, topdown=False):
+        for root_dir, ds, fs in os.walk(dir_path):
+            logging.debug("aaaa {}".format(root_dir))
             if len(ds) > 0:
                 if not recursive:
                     raise DirectoryHaveSubDirs(dir_path)
                 else:
                     for adir in ds:
-                        logging.debug("path to clear - dir: {}".format(adir))
-                        dirs.append(os.path.join(dir_name, adir))
-            for file in fs:
-                logging.debug("path to clear - file: {}".format(file))
-                files.append(os.path.join(dir_name, file))
-            break
-
+                        sub_dir = os.path.join(root_dir, adir)
+                        logging.debug("path to clear - dir: {}".format(sub_dir))
+                        dirs.append(sub_dir)
+            for f in fs:
+                f_path = os.path.join(root_dir, f)
+                logging.debug("path to clear - file: {}".format(f_path))
+                files.append(f_path)
+            
         all_for_before = files.copy()
         all_for_before.extend(dirs)
+
+        logging.debug("for delete: {}".format(len(all_for_before)))
         
         if len(all_for_before) == 0:
             return
         
-
         if not self.__clear_handler.on_before_clear(all_for_before):
-            return
-
-        exit()
+            logging.debug("deciline remove")
+            raise CancelClearDestination()
         
+        logging.debug("Start remove general files")
+
         self.__process_list(files, os.remove, self.__clear_handler)
+        
+        logging.debug("Start remove dirs")
 
         self.__process_list(dirs, os.rmdir, self.__clear_handler)
 
-        self.__clear_handler.on_finish()
+        self.__clear_handler.on_finish(len(all_for_before))
 
 
     def copy(self, source: Source, destination_dir: str):
@@ -141,5 +150,5 @@ class CopyController(object):
         
         self.__process_list(files, copy, self.__copy_handler)
 
-        self.__copy_handler.on_finish()
+        self.__copy_handler.on_finish(len(files))
  
