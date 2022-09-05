@@ -1,3 +1,5 @@
+from asyncio.log import logger
+import logging
 import os
 from math import floor
 from typing import List
@@ -85,27 +87,34 @@ class CopyController(object):
             action(f)
     
     def __clear_folder(self, dir_path: str, recursive: bool):
+        logging.debug("path to clear {}".format(dir_path))
         files: List[str] = []
         dirs: List[str] = []
 
-        for dir_name, dirs, files in os.walk(dir_path):
-            if len(dirs) > 0:
+        for dir_name, ds, fs in os.walk(dir_path, topdown=False):
+            if len(ds) > 0:
                 if not recursive:
                     raise DirectoryHaveSubDirs(dir_path)
                 else:
-                    for adir in dirs:
+                    for adir in ds:
+                        logging.debug("path to clear - dir: {}".format(adir))
                         dirs.append(os.path.join(dir_name, adir))
-            for file in files:
+            for file in fs:
+                logging.debug("path to clear - file: {}".format(file))
                 files.append(os.path.join(dir_name, file))
             break
 
-        all_for_before = files.copy().extend(dirs)
+        all_for_before = files.copy()
+        all_for_before.extend(dirs)
         
         if len(all_for_before) == 0:
             return
+        
 
         if not self.__clear_handler.on_before_clear(all_for_before):
             return
+
+        exit()
         
         self.__process_list(files, os.remove, self.__clear_handler)
 
@@ -122,8 +131,10 @@ class CopyController(object):
 
         check_is_dir_exists(destination_dir)
         files = source.paths_in_order()
+        logger.debug("files in the source {}".format(len(files)))
         if not files:
             raise NotFilesInSource()
+
         self.__clear_folder(destination_dir, True)
 
         copy = lambda f: self.__copier.copy(f, destination_dir)

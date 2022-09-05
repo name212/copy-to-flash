@@ -1,4 +1,5 @@
 import logging
+from sys import stdout
 from typing import List, Optional
 
 from copier import CopyAlgo, CopyController
@@ -15,7 +16,7 @@ class ArgumentError(Exception):
         super().__init__(msg)
         self.clause = msg
 
-def _get_destination_partition(removable_devices: List[FlashDevice], prog_args: Args) -> Optional[Partition]:
+def __get_destination_partition(removable_devices: List[FlashDevice], prog_args: Args) -> Optional[Partition]:
     # have destination partition. return it
     if prog_args.dest_part:
         return prog_args.dest_part
@@ -35,13 +36,15 @@ def run(available_devices: List[FlashDevice], version: str):
         version_str=version
     ).get_args()
 
-    log = logging.getLogger()
-    log.setLevel(logging.WARN)
+
+    logLvl = logging.WARN
 
     if args.verbose:
-        log.setLevel(logging.DEBUG)
+        logLvl= logging.DEBUG
+    
+    logging.basicConfig(stream=stdout, level=logLvl)
 
-    log.debug("arguments={}", args)
+    logging.debug("arguments={}".format(args))
 
     if not available_devices:
         raise ArgumentError("")
@@ -49,33 +52,32 @@ def run(available_devices: List[FlashDevice], version: str):
     if not args.source_dir or args.source_dir == "":
         raise ArgumentError("source is required")
     
-    dest_dir = ""
+    part = args.dest_part
 
     if not args.dest_part:
-        part = _get_destination_partition(available_devices, args)
+        part = __get_destination_partition(available_devices, args)
         if not part:
             raise ArgumentError("destination partition is required")
-        log.debug("choiced part device: {} | {}".format(
+        logging.debug("choiced part device: {} | {}".format(
             part.get_label(),
             part.get_dev_file(),
         ))
-        dest_dir = part.get_mount()
+
+    dest_dir = part.get_mount()
     
-    log.debug("destinatin dir: {}", dest_dir)
+    logging.debug("destinatin dir: {}".format(dest_dir))
 
     copier: CopyAlgo = args.copier
     if not copier:
         copier = LimitDirSizeCopier(max_files_in_dir=512)
     
-    log.debug("copy algo {}", copier)
+    logging.debug("copy algo {}".format(copier))
 
     source = MusicDirSource(args.source_dir)
-
-    exit(0)
 
     c = CopyController()
     c.set_copier(copier)
     c.set_clear_handler(ConsoleClearHandler(args.verbose))
     c.set_copy_handler(ConsoleCopyHandler())
 
-    copier.copy(source, dest_part)
+    c.copy(source, dest_dir)
