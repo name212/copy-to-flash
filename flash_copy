@@ -1,0 +1,14 @@
+#!/bin/bash
+
+PACKAGE_NAME="copy_to_flash"
+
+if ! source ./start-virt-env --from-run; then
+  RED_COLOR='\033[0;31m'
+  NO_COLOR='\033[0m' 
+  >&2 echo -e "${RED_COLOR}ERROR${NO_COLOR} Can not start virtual environment"
+  exit 1
+fi
+
+python "src/${PACKAGE_NAME}/main.py" $@
+
+deactivate

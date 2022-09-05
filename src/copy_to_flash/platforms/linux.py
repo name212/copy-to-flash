@@ -1,6 +1,9 @@
-from FlashDevice import Partition, FlashDevice
 import json
+import logging
 from subprocess import check_output
+from typing import List
+
+from device import FlashDevice, Partition
 
 
 class __LinuxPartition(Partition):
@@ -84,7 +87,7 @@ def __get_block_devices():
     raise Exception("Not found block devices")
 
 
-def __build_device(device):
+def __build_device(device: dict) -> FlashDevice:
     partitions = []
     flash_device = __LinuxFlashDevice(name=device.get('name'),
                                       partitions=partitions,
@@ -103,13 +106,18 @@ def __build_device(device):
     return flash_device
 
 
-def get_available_devices():
+class NotAvailableDestinationDevices(Exception):
+    pass
+
+def get_available_devices() -> List[FlashDevice]:
     block_devices = __get_block_devices()
     available_devices = []
     for device in block_devices:
         removable = device.get("rm")
         type_dev = device.get("type")
-        if not type_dev or type_dev != "disk" or not removable or removable != "1":
+        if not type_dev or type_dev != "disk" or not removable:
             continue
         available_devices.append(__build_device(device))
+    if not available_devices:
+        raise NotAvailableDestinationDevices
     return available_devices
