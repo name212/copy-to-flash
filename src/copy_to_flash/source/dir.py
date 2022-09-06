@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from copier import Source, check_is_dir_exists
+from copier import Source, SourceFile, check_is_dir_exists
 
 
 class Sorter(object):
@@ -18,7 +18,7 @@ class DirSource(Source):
         self.__path = dir_path
         self.__sorter = sorter
 
-    def paths_in_order(self) -> List[str]:
+    def paths_in_order(self) -> List[SourceFile]:
         for dir_name, dirs, files in os.walk(self.__path, followlinks=True):
             for file in files:
                 path = os.path.join(dir_name, file)
