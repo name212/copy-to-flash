@@ -29,13 +29,18 @@ class CopyAlgo(object):
     def copy(self, source_file_path: str, destination_dir_path: str):
         raise NotImplementedError()
 
+class SourceFile():
+    def __init__(self, path, attr1="", attr2="") -> None:
+        self.path = path
+        self.attr1 = attr1
+        self.attr2 = attr2
 
 class Source(object):
-    def paths_in_order() -> List[str]:
+    def paths_in_order() -> List[SourceFile]:
         raise NotImplementedError()
 
 class ProgressTick(object):
-    def __init__(self, process_file: str, file_index: int, total_files: int):
+    def __init__(self, process_file: SourceFile, file_index: int, total_files: int):
         self.file = process_file
         self.file_index = file_index
         self.total_files = total_files
@@ -51,7 +56,7 @@ class ProcessHandler(object):
         pass
 
 class CleanHandler(ProcessHandler):
-    def on_before_clear(self, files: List[str]) -> bool:
+    def on_before_clear(self, files: List[SourceFile]) -> bool:
         # do clear
         return True
 
@@ -81,7 +86,7 @@ class CopyController(object):
             return
         self.__copy_handler = handler
     
-    def __process_list(self, l: List[str], action, preprocessor: ProcessHandler):
+    def __process_list(self, l: List[SourceFile], action, preprocessor: ProcessHandler):
         i = 0
         for f in l:
             tick = ProgressTick(process_file=f, file_index=i, total_files=len(l))
@@ -91,10 +96,10 @@ class CopyController(object):
     
     def __clear_folder(self, dir_path: str, recursive: bool):
         logging.debug("path to clear {}".format(dir_path))
-        files: List[str] = []
-        dirs: List[str] = []
+        files: List[SourceFile] = []
+        dirs: List[SourceFile] = []
 
-        for root_dir, ds, fs in os.walk(dir_path):
+        for root_dir, ds, fs in os.walk(dir_path, topdown=False):
             logging.debug("aaaa {}".format(root_dir))
             if len(ds) > 0:
                 if not recursive:
@@ -103,14 +108,14 @@ class CopyController(object):
                     for adir in ds:
                         sub_dir = os.path.join(root_dir, adir)
                         logging.debug("path to clear - dir: {}".format(sub_dir))
-                        dirs.append(sub_dir)
+                        dirs.append(SourceFile(sub_dir))
             for f in fs:
                 f_path = os.path.join(root_dir, f)
                 logging.debug("path to clear - file: {}".format(f_path))
-                files.append(f_path)
+                files.append(SourceFile(f_path))
             
-        all_for_before = files.copy()
-        all_for_before.extend(dirs)
+        all_for_before: List[SourceFile] = [SourceFile(f.path) for f in files]
+        all_for_before.extend([SourceFile(d.path) for d in dirs])
 
         logging.debug("for delete: {}".format(len(all_for_before)))
         
@@ -123,11 +128,11 @@ class CopyController(object):
         
         logging.debug("Start remove general files")
 
-        self.__process_list(files, os.remove, self.__clear_handler)
+        self.__process_list(files, lambda f: os.remove(f.path), self.__clear_handler)
         
         logging.debug("Start remove dirs")
 
-        self.__process_list(dirs, os.rmdir, self.__clear_handler)
+        self.__process_list(dirs, lambda d: os.rmdir(d.path), self.__clear_handler)
 
         self.__clear_handler.on_finish(len(all_for_before))
 
@@ -146,7 +151,7 @@ class CopyController(object):
 
         self.__clear_folder(destination_dir, True)
 
-        copy = lambda f: self.__copier.copy(f, destination_dir)
+        copy = lambda f: self.__copier.copy(f.path, destination_dir)
         
         self.__process_list(files, copy, self.__copy_handler)
 

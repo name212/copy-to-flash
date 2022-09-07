@@ -3,18 +3,22 @@ from typing import List
 
 from pymediainfo import MediaInfo
 from operator import itemgetter
+
+from copier import SourceFile
 from .dir import DirSource, Sorter
 
 
 def _name_filter(track):
     name = None
+    artist = None
     is_audio = False
     if 'track_type' in track and track['track_type'] == 'Audio':
         is_audio = True
     if 'title' in track and track['title']:
         name = track['title']
-
-    return is_audio, name
+    if 'performer' in track and track['performer']:
+        artist = track['performer']
+    return is_audio, name, artist
 
 
 class MusicTrackSorter(Sorter):
@@ -35,23 +39,26 @@ class MusicTrackSorter(Sorter):
             return None
         sort_value = None
         save = False
+        artist_value = None
         for track in info['tracks']:
-            is_save, value = self.__filter(track)
+            is_save, value, artist = self.__filter(track)
             if is_save:
                 save = True
             if value:
                 sort_value = value
-        logging.debug("sorting_value={}; save={}".format(sort_value, save))
+            if artist:
+                artist_value = artist
+        logging.debug("sorting_value={}; save={} artist_val={}".format(sort_value, save, artist_value))
         if sort_value and save:
-            self.__path_list.append({'path': path, 'sort': sort_value})
+            self.__path_list.append({'path': path, 'title': sort_value, 'artist': artist_value})
         return None
 
-    def sort(self) -> List[str]:
-        self.__path_list.sort(key=itemgetter('sort'), reverse=self.__reverse)
+    def sort(self) -> List[SourceFile]:
+        self.__path_list.sort(key=itemgetter('title'), reverse=self.__reverse)
         res = []
         for p in self.__path_list:
             logging.debug("add to result list: {}".format(p['path']))
-            res.append(p['path'])
+            res.append(SourceFile(p['path'], attr1=p['artist'], attr2=p['title']))
         return res
 
 class MusicDirSource(DirSource):
