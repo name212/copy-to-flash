@@ -1,10 +1,10 @@
-from curses.panel import top_panel
 import logging
 from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, Widget, Variable
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Spinbox
 
 from typing import List
+from gui.line import Line
 from device import FlashDevice
 
 def pack(w: Widget, side):
@@ -98,6 +98,9 @@ class MainWindow(Frame):
     def _build(self):
         input_frame = self._build_input(self)
         input_frame.pack(side=TOP, fill=X, expand=True)
+
+        l = Line(self, width=2, color="#E4E4E4")
+        l.pack(side=TOP, fill=BOTH, expand=True, pady=4)
 
         self.pack(side=TOP, fill=X, expand=True)
 
