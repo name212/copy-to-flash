@@ -62,7 +62,9 @@ class CleanHandler(ProcessHandler):
 
 
 class CopyHandler(ProcessHandler):
-    pass
+    def on_before_copy(self, files: List[SourceFile]) -> List[SourceFile]:
+        # by default no handle
+        return files
 
 
 class CopyController(object):
@@ -150,6 +152,8 @@ class CopyController(object):
             raise NotFilesInSource()
 
         self.__clear_folder(destination_dir, True)
+
+        files = self.__copy_handler.on_before_copy(files)
 
         copy = lambda f: self.__copier.copy(f.path, destination_dir)
         

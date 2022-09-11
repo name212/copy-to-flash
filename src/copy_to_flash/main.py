@@ -24,18 +24,17 @@ def available_devices() -> List[FlashDevice]:
 
 if __name__ == "__main__":
     start_gui = False
-    devices = available_devices()
     try:
+        devices = available_devices()
         cli_run(devices, _VERSION)
     except (NotAvailableDestinationDevices, ArgumentError) as e:
         start_gui = True
-        # todo gui here
     except BaseException as e:
         logging.error("Got error {}".format(e))
         sys.exit(1)    
     
     if start_gui:
-        app = App()
-        app.run(devices, _VERSION)
+        app = App(_VERSION)
+        app.run(devices)
 
 
