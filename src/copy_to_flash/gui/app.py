@@ -10,8 +10,8 @@ class App(Tk):
         super().__init__()
 
         self.title("Copy music to flash")
-        (width, height) = (500, 450)
-        self.geometry("{}x{}".format(width, height))
+        #(width, height) = (500, 450)
+        #self.geometry("{}x{}".format(width, height))
 
 
     def run(self, device_getter: Callable[[], List[FlashDevice]]):
