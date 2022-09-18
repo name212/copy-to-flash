@@ -3,44 +3,24 @@ from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, Widget, Variable
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Spinbox
 from typing import List
+from gui.widgets import Line
+from gui.components import CopierAlgoInput, ProcessOutput
+from gui.controller import Controller
 from device import FlashDevice
 
-from copier import ProgressTick
-from gui.line import Line
 
 _pad_between_x = 3
 _pad_between_y = 10
 _pad_between_yy = 5
 
-class _Process(LabelFrame):
-    def __init__(self, master) -> None:
-        super().__init__(master=master, text="Remove/Copy")
-        self._file = Label(self, text='N/A')
-        self._progress = Progressbar(self, maximum=100)
-
-        self._file.pack(side=TOP, fill=X, expand=True)
-        self._progress.pack(side=TOP, fill=X, expand=True)
-    
-    def start_copy(self):
-        self.configure(text="Copy")
-        self._file.configure(text='N/A')
-        self._progress.configure(value=0)
-    
-    def start_clean(self):
-        self.configure(text="Remove")
-        self._file.configure(text='N/A')
-        self._progress.configure(value=0)
-    
-    def on_process(self, tick: ProgressTick):
-        t = tick.file.path
-        if tick.file.attr1 and tick.file.attr2:
-            t = "{} - {} [{}]".format(tick.file.attr1, tick.file.attr2, t)
-        self._file.configure(text=t)
-        self._progress.configure(value=tick.percent())
-        
-
-
 class MainWindow(Frame):
+    def __init__(self, master, controller: Controller): 
+        super().__init__(master)
+
+        self._controller = controller        
+        self.dir_path = StringVar()
+        
+        self._build()
 
     def _on_click_choice_dir(self):
         dir = askdirectory(title='Choice source directory')
@@ -63,8 +43,10 @@ class MainWindow(Frame):
     def _build_dest_part_input(self, parent):
         self._ddf = LabelFrame(parent, text='Destination partition to copy')
 
-        self._desdir_entry_combo = Combobox(self._ddf)
-        
+        parts, selected_part = self._controller.get_available_devices()
+
+        self._desdir_entry_combo = Combobox(self._ddf, values=parts, textvariable=selected_part)
+                
         self._desdir_entry_combo.pack(side=LEFT, fill=BOTH, expand=True)
         
         return self._ddf
@@ -72,38 +54,14 @@ class MainWindow(Frame):
     def _build_sorter_input(self, parent):
         self._sorter_f = LabelFrame(parent, text='Sorter')
 
-        values=[
-            "By title (Asc)"
-        ]
-        self._sorter_combo = Combobox(self._sorter_f, values=values)
-        self._sorter_combo.set(values[0])
+        sorters_list, sorter = self._controller.sorters()
+
+        self._sorter_combo = Combobox(self._sorter_f, values=sorters_list, textvariable=sorter)
+        self._sorter_combo.set(sorters_list[0])
 
         self._sorter_combo.pack(side=LEFT)
 
         return self._sorter_f
-
-    def _build_copier_input(self, parent):
-        self._copier_f = LabelFrame(parent, text='Copier')
-
-        values=[
-            "Simple",
-            "Limited dir size",
-        ]
-        self._copier_combo = Combobox(self._copier_f, values=values)
-        self._copier_combo.set(values[0])
-        self._copier_combo.pack(side=TOP, fill=X, expand=True)
-
-        self._lds_f = Frame(self._copier_f)
-
-        l = Label(self._lds_f, text="Per dir")
-        self._per_dir_spin = Spinbox(self._lds_f, from_=1, to=100000)
-        self._per_dir_spin.set(512)
-        l.pack(side=LEFT, padx=(0, _pad_between_x))
-        self._per_dir_spin.pack(side=LEFT)
-
-        self._lds_f.pack(side=TOP, fill=X, expand=True)
-
-        return self._copier_f
 
     def _build_input(self, parent):
         input_frame = Frame(parent)
@@ -117,7 +75,7 @@ class MainWindow(Frame):
         copy_settings = Frame(input_frame)
         container = self._build_sorter_input(copy_settings)
         container.pack(side=LEFT, fill=BOTH, expand=True)
-        container = self._build_copier_input(copy_settings)
+        container = CopierAlgoInput(copy_settings, self._controller)
         container.pack(side=LEFT, fill=BOTH, expand=True)
 
         copy_settings.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)
@@ -132,18 +90,10 @@ class MainWindow(Frame):
         l = Line(self, width=2, color="#E4E4E4")
         l.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
-        self._process = _Process(self)
+        self._process = ProcessOutput(self)
         self._process.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
         self._action_btn = Button(self, text="Start")
         self._action_btn.pack(side=RIGHT, padx=_pad_between_x, pady=(0, _pad_between_y))
 
         self.pack(side=TOP, fill=X, expand=True)
-
-
-    def __init__(self, master): 
-        super().__init__(master)
-                
-        self.dir_path = StringVar()
-        
-        self._build()

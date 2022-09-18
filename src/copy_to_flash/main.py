@@ -35,6 +35,6 @@ if __name__ == "__main__":
     
     if start_gui:
         app = App(_VERSION)
-        app.run(devices)
+        app.run(available_devices)
 
 

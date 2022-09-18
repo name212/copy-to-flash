@@ -62,5 +62,5 @@ class MusicTrackSorter(Sorter):
         return res
 
 class MusicDirSource(DirSource):
-    def __init__(self, dir_path: str):
-        super().__init__(dir_path, MusicTrackSorter())
+    def __init__(self, dir_path: str, reverse=False):
+        super().__init__(dir_path, MusicTrackSorter(reverse=reverse))

@@ -1,5 +1,6 @@
 from tkinter import Tk
 from typing import List, Callable
+from gui.controller import Controller
 
 from device import FlashDevice
 from .main_window import MainWindow
@@ -10,10 +11,8 @@ class App(Tk):
         super().__init__()
 
         self.title("Copy music to flash")
-        #(width, height) = (500, 450)
-        #self.geometry("{}x{}".format(width, height))
-
 
     def run(self, device_getter: Callable[[], List[FlashDevice]]):
-        self.mw = MainWindow(self)
+        c = Controller(device_getter=device_getter)
+        self.mw = MainWindow(self, controller=c)
         self.mw.mainloop()
