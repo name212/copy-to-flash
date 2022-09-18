@@ -2,9 +2,9 @@ import logging
 from math import ceil
 from tkinter import BOTH, LEFT, RIGHT, TOP, X
 from tkinter.ttk import LabelFrame, Frame, Combobox, Label, Progressbar, Spinbox
-from typing import List
+from typing import Dict, List
 from gui.controller import Controller
-from device import FlashDevice
+from device import AvailableDevices, FlashDevice
 
 from copier import ProgressTick
 
@@ -71,4 +71,43 @@ class CopierAlgoInput(LabelFrame):
             self._lds_f.pack_forget()
             logging.debug("Hide lds input")
 
+class DestinationPartitionInput(LabelFrame):
+    def __init__(self, master, available_devices: AvailableDevices) -> None:
+        super().__init__(master, text='Destination partition to copy')
+        
+        self.__available_devices = available_devices
+
+        self.__desdir_entry_combo = Combobox(self, state="readonly")
+
+        self.__on_available_devices_changed(self.__available_devices.get_available_partitions())
+
+        available_devices.set_on_available_devices_changed(self.__on_available_devices_changed)
+        self.__desdir_entry_combo.bind('<<ComboboxSelected>>', self.__modified)
+                
+        self.__desdir_entry_combo.pack(side=LEFT, fill=BOTH, expand=True)
+
+    def __modified(self, _):
+        self.__available_devices.set_choiced(self.__desdir_entry_combo.get())
+
+    def __on_available_devices_changed(self, devices: Dict[str, str]):
+        cur_val = self.__desdir_entry_combo.get()
+        
+        mount: List[str] = []
+        found = False
+        for k in devices:
+            if k == cur_val:
+                found = True
+            mount.append(k)
+        mount.sort()
+
+        if len(mount) == 0:
+            mount.append('Not found devices. Plug-in USB device')
+        if not found:
+            cur_val = mount[0]
+
+        self.__desdir_entry_combo.configure(values=mount)
+        self.__desdir_entry_combo.set(cur_val)
     
+    def destroy(self) -> None:
+        self.__available_devices.stop_watch()
+        return super().destroy()

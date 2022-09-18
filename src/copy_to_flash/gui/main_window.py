@@ -1,13 +1,10 @@
 import logging
-from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, Widget, Variable
+from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Spinbox
-from typing import List
 from gui.widgets import Line
-from gui.components import CopierAlgoInput, ProcessOutput
+from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
 from gui.controller import Controller
-from device import FlashDevice
-
 
 _pad_between_x = 3
 _pad_between_y = 10
@@ -40,17 +37,6 @@ class MainWindow(Frame):
         
         return self._sdf
 
-    def _build_dest_part_input(self, parent):
-        self._ddf = LabelFrame(parent, text='Destination partition to copy')
-
-        parts, selected_part = self._controller.get_available_devices()
-
-        self._desdir_entry_combo = Combobox(self._ddf, values=parts, textvariable=selected_part)
-                
-        self._desdir_entry_combo.pack(side=LEFT, fill=BOTH, expand=True)
-        
-        return self._ddf
-
     def _build_sorter_input(self, parent):
         self._sorter_f = LabelFrame(parent, text='Sorter')
 
@@ -66,8 +52,10 @@ class MainWindow(Frame):
     def _build_input(self, parent):
         input_frame = Frame(parent)
 
-        container = self._build_dest_part_input(input_frame)
-        container.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)
+        self.__available_devices = self._controller.get_available_devices()
+
+        self.__dest_dir_input = DestinationPartitionInput(input_frame, self.__available_devices)
+        self.__dest_dir_input.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)
 
         container = self._build_source_dir_input(input_frame)
         container.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)

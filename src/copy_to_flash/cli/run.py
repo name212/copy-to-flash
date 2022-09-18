@@ -45,7 +45,9 @@ def run(available_devices: List[FlashDevice], version: str):
     if args.verbose:
         logLvl= logging.DEBUG
     
-    logging.basicConfig(stream=stdout, level=logLvl)
+    strfmt = '[%(asctime)s] [%(name)s] [%(levelname)s] > %(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    logging.basicConfig(stream=stdout, level=logLvl, format=strfmt, datefmt=datefmt)
 
     logging.debug("arguments={}".format(args))
 
