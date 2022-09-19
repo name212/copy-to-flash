@@ -74,6 +74,8 @@ class CopierAlgoInput(LabelFrame):
 class DestinationPartitionInput(LabelFrame):
     def __init__(self, master, available_devices: AvailableDevices) -> None:
         super().__init__(master, text='Destination partition to copy')
+
+        self.__logger = logging.getLogger(__name__)
         
         self.__available_devices = available_devices
 
@@ -90,6 +92,8 @@ class DestinationPartitionInput(LabelFrame):
         self.__available_devices.set_choiced(self.__desdir_entry_combo.get())
 
     def __on_available_devices_changed(self, devices: Dict[str, str]):
+        self.__logger.debug('__on_available_devices_changed run: {}'.format(devices))
+
         cur_val = self.__desdir_entry_combo.get()
         
         mount: List[str] = []

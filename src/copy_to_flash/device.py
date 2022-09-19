@@ -105,25 +105,25 @@ class AvailableDevices(object):
         self.__check_run_lock.acquire()
         self.__lock.acquire()
         
-        new_label_to_dest = self.__label_to_dest_dir.copy()
+        new_label_to_dest: Dict[str, str] = dict()
         changed = False
 
         logging.debug('get devices')
         
         for d in self.__getter():
+            logging.debug('Pass device {}'.format(d.get_title()))
             for p in d.get_partitions():
                 m = p.get_mount()
                 l = p.get_label()
                 full_label = "{} - {}".format(l, m)
-                old = new_label_to_dest.get(full_label, '')
+                logging.debug('Pass partition {}'.format(full_label))
+                old = self.__label_to_dest_dir.get(full_label, '')
+                new_label_to_dest[full_label] = m
                 if old != m:
                     changed = True
-                    new_label_to_dest[full_label] = m
                     logging.debug('available partition changed, new/changed mount: {}'. format(full_label))
         
         for k in self.__label_to_dest_dir:
-            logging.debug('find deleted devices: {}'.format(k))
-
             if not new_label_to_dest.get(k):
                 changed = True
                 logging.debug('mount was deleted: {}'.format(k))

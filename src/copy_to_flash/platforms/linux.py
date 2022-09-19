@@ -96,6 +96,8 @@ def __build_device(device: dict) -> FlashDevice:
     if "children" in device:
         for child in device['children']:
             if "type" in child and child['type'] == "part":
+                if not child.get('mountpoint'):
+                    continue
                 part = __LinuxPartition(parent=flash_device,
                                         name=child.get('name'),
                                         mount=child.get('mountpoint'),
