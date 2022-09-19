@@ -1,8 +1,9 @@
 import logging
 from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, messagebox
-import tkinter
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Spinbox
+from copier import SourceFile
+from gui.approve_list_dialog import ApproveRemoveBeforeDialog, ListAdapter
 from gui.widgets import Line
 from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
 from gui.controller import Controller
@@ -72,6 +73,13 @@ class MainWindow(Frame):
         return input_frame
     
     def __on_start_click(self):
+        l = []
+        for i in range(1, 200):
+            p = "/path/sub/another/dir/suka/hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh/{}".format(i)
+            l.append(SourceFile(p))
+        dlg = ApproveRemoveBeforeDialog(self, ListAdapter(l))
+
+        
         try:
             self._controller.start_copy()
         except BaseException as e:
