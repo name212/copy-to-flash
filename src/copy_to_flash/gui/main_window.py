@@ -1,5 +1,6 @@
 import logging
-from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar
+from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, messagebox
+import tkinter
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Spinbox
 from gui.widgets import Line
@@ -15,19 +16,18 @@ class MainWindow(Frame):
         super().__init__(master)
 
         self._controller = controller        
-        self.dir_path = StringVar()
         
         self._build()
 
     def _on_click_choice_dir(self):
         dir = askdirectory(title='Choice source directory')
         logging.debug('Choicen source dir:{}'.format(dir))
-        self.dir_path.set(dir)
+        self._controller.source_dir.set(dir)
 
     def _build_source_dir_input(self, parent):
         self._sdf = LabelFrame(parent, text='Source directory from copy')
 
-        self._source_dir_entry = Entry(self._sdf, textvariable=self.dir_path)
+        self._source_dir_entry = Entry(self._sdf, textvariable=self._controller.source_dir)
         
         ask_dir_btn = Button(self._sdf, text='Choice dir...')
         ask_dir_btn.config(command=self._on_click_choice_dir)
@@ -70,6 +70,12 @@ class MainWindow(Frame):
 
         self.input_frame = input_frame
         return input_frame
+    
+    def __on_start_click(self):
+        try:
+            self._controller.start_copy()
+        except BaseException as e:
+            messagebox.showerror("Error", str(e))
 
     def _build(self):
         input_frame = self._build_input(self)
@@ -81,7 +87,7 @@ class MainWindow(Frame):
         self._process = ProcessOutput(self)
         self._process.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
-        self._action_btn = Button(self, text="Start")
+        self._action_btn = Button(self, text="Start", command=self.__on_start_click)
         self._action_btn.pack(side=RIGHT, padx=_pad_between_x, pady=(0, _pad_between_y))
 
         self.pack(side=TOP, fill=X, expand=True)
