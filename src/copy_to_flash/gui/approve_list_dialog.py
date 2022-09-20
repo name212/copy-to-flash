@@ -1,3 +1,4 @@
+import logging
 from tkinter import BOTH, BOTTOM, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Button, Frame, Label, Listbox, Scrollbar, Toplevel, simpledialog, ttk
 from turtle import width
 from typing import List
@@ -17,13 +18,22 @@ class ListAdapter(object):
             raise ValueError("Incorrect second arg")
         
         t = self.list[i]
-        self.list[i] = self[j]
+        self.list[i] = self.list[j]
         self.list[j] = t
 
     def delete(self, i: int):
         if i < 0 or i >= len(self.list):
             raise ValueError("Incorrect index")
         del self.list[i]
+    
+    def find(self, vv: str):
+        i = 0
+        for v in self.list:
+            if v.path == vv:
+                return i
+            i += 1
+
+        return -1 
 
 class ApproveRemoveBeforeDialog(simpledialog.Dialog):
     def __init__(self, master, list: ListAdapter) -> None:
@@ -70,22 +80,40 @@ class ApproveRemoveBeforeDialog(simpledialog.Dialog):
 
 
 class ChageListButtons(Frame):
-    def __init__(self, master, list: ListAdapter) -> None:
+    def __init__(self, master, list: ListAdapter, lst) -> None:
         super().__init__(master)
         self.__list = list
+        self.__selected = ''
 
         self.__f = Frame(self)
 
-        self._up_btn = Button(self.__f, text="Up")
+        self._up_btn = Button(self.__f, text="  Up  ", command=self.__on_up)
         self._up_btn.pack(side=TOP, pady=pad_between_y)
 
-        self._delete_btn = Button(self.__f, text="Delete")
+        self._delete_btn = Button(self.__f, text="Delete", command=self.__on_delete)
         self._delete_btn.pack(side=TOP, pady=pad_between_y)
 
-        self._delete_btn = Button(self.__f, text="Down")
+        self._delete_btn = Button(self.__f, text=" Down ", command=self.__on_down)
         self._delete_btn.pack(side=TOP)
 
         self.__f.pack(side='left')
+
+    def __on_up(self):
+        indx = self.__list.find(self.__selected)
+        if indx > 0 or indx < len(self.__list) - 1:
+            self.__list.swap(indx, indx - 1)
+    
+    def __on_down(self):
+        indx = self.__list.find(self.__selected)
+        if indx < len(self.__list) - 1:
+            self.__list.swap(indx, indx + 1)
+    
+    def __on_delete(self):
+        indx = self.__list.find(self.__selected)
+        self.__list.delete(indx)
+
+    def set_selected(self, v):
+        self.__selected = v
 
 
 class ApproveBeforeCopyDialog(simpledialog.Dialog):
@@ -133,7 +161,10 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
         self.__listbox.column("#2", minwidth=250)
         self.__listbox.column("#3", minwidth=2048)
 
-        self.__action_btns = ChageListButtons(self.__list_frame_full, self.__list)
+        self.__action_btns = ChageListButtons(self.__list_frame_full, self.__list, self.__listbox
+        )
+
+        self.__listbox.bind('<<TreeviewSelect>>', self.__on_select)
 
         self._answer_lbl.pack(side=TOP, fill=X, expand=True, anchor='w')
         self.__list_frame_full.pack(side=TOP, fill=BOTH, expand=False)
@@ -147,3 +178,9 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
 
         self.geometry("800x500")
         return super().body(master)
+
+    def __on_select(self, _):
+        id = self.__listbox.selection()[0]
+        v = self.__listbox.item(id)['values'][2]
+        logging.debug('select path: {}'.format(v))
+        self.__action_btns.set_selected(v)
