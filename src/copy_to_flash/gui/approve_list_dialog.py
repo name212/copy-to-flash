@@ -1,5 +1,6 @@
-from tkinter import BOTH, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Frame, Label, Listbox, Scrollbar, simpledialog
+from tkinter import BOTH, BOTTOM, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Button, Frame, Label, Listbox, Scrollbar, Toplevel, simpledialog, ttk
 from typing import List
+from .components import pad_between_y
 
 from copier import SourceFile
 
@@ -63,4 +64,68 @@ class ApproveRemoveBeforeDialog(simpledialog.Dialog):
         self.__scrollbar_y.pack(side=RIGHT, fill=Y, expand=True)
 
         self.geometry("700x500")
+        return super().body(master)
+
+
+class ChageListButtons(Frame):
+    def __init__(self, master, list: ListAdapter) -> None:
+        super().__init__(master)
+        self.__list = list
+
+        self.__f = Frame(self)
+
+        self._up_btn = Button(self.__f, text="Up")
+        self._up_btn.pack(side=BOTTOM, pady=pad_between_y)
+
+        self._delete_btn = Button(self.__f, text="Delete")
+        self._delete_btn.pack(side=BOTTOM, pady=pad_between_y)
+
+        self._delete_btn = Button(self.__f, text="Down")
+        self._delete_btn.pack(side=BOTTOM)
+
+        self.__f.pack(side='left')
+
+
+class ApproveBeforeCopyDialog(simpledialog.Dialog):
+    def __init__(self, master, list: ListAdapter) -> None:
+        self.__list = list
+        super().__init__(master, title='Check files before copy')
+        
+    def body(self, master: Frame):
+        self._answer_lbl = Label(master=self, text="Do you want copy next files in order to flash device?")
+        self._answer_lbl.configure(compound='left')
+
+        self.__list_frame_full = Frame(self)
+        self.__list_frame_with_x = Frame(self.__list_frame_full)
+
+        self.__scrollbar_y = Scrollbar(self.__list_frame_full, orient=VERTICAL, width=10)
+        self.__scrollbar_x = Scrollbar(self.__list_frame_with_x, orient=HORIZONTAL)
+
+        self.__listbox = Listbox(
+            master=self.__list_frame_with_x,
+            xscrollcommand=self.__scrollbar_x.set, 
+            yscrollcommand=self.__scrollbar_y.set,
+            width=80,
+            height=22,
+        )
+        for f in self.__list.list:
+            self.__listbox.insert(END, f.path)
+
+        self.__action_btns = ChageListButtons(self.__list_frame_full)
+
+        self.__scrollbar_x.configure(command=self.__listbox.xview)
+        self.__scrollbar_y.configure(command=self.__listbox.yview)
+
+
+        self._answer_lbl.pack(side=TOP, fill=X, expand=True)
+        self.__list_frame_full.pack(side=TOP, fill=BOTH, expand=True)
+        
+        self.__listbox.pack(side=TOP, fill=BOTH, expand=True)
+        self.__scrollbar_x.pack(side=TOP, fill=X, expand=True)
+
+        self.__list_frame_with_x.pack(side=LEFT, fill=BOTH, expand=True)
+        self.__scrollbar_y.pack(side=LEFT, fill=Y, expand=True)
+        self.__action_btns.pack(side=LEFT, fill=BOTH, expand=True)
+
+        self.geometry("730x500")
         return super().body(master)

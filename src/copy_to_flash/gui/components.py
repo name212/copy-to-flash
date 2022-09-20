@@ -9,6 +9,7 @@ from device import AvailableDevices, FlashDevice
 from copier import ProgressTick
 
 pad_between_x = 3
+pad_between_y = 5
 
 class ProcessOutput(LabelFrame):
     def __init__(self, master) -> None:

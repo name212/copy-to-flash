@@ -3,7 +3,7 @@ from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, messagebox
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Spinbox
 from copier import SourceFile
-from gui.approve_list_dialog import ApproveRemoveBeforeDialog, ListAdapter
+from gui.approve_list_dialog import ApproveBeforeCopyDialog, ApproveRemoveBeforeDialog, ListAdapter
 from gui.widgets import Line
 from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
 from gui.controller import Controller
@@ -77,7 +77,7 @@ class MainWindow(Frame):
         for i in range(1, 200):
             p = "/path/sub/another/dir/suka/hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh/{}".format(i)
             l.append(SourceFile(p))
-        dlg = ApproveRemoveBeforeDialog(self, ListAdapter(l))
+        dlg = ApproveBeforeCopyDialog(self, ListAdapter(l))
 
         
         try:
