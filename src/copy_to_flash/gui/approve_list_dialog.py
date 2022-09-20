@@ -1,4 +1,5 @@
 from tkinter import BOTH, BOTTOM, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Button, Frame, Label, Listbox, Scrollbar, Toplevel, simpledialog, ttk
+from turtle import width
 from typing import List
 from .components import pad_between_y
 
@@ -46,6 +47,7 @@ class ApproveRemoveBeforeDialog(simpledialog.Dialog):
             yscrollcommand=self.__scrollbar_y.set,
             width=80,
             height=22,
+            state='disabled',
         )
         for f in self.__list.list:
             self.__listbox.insert(END, f.path)
@@ -75,13 +77,13 @@ class ChageListButtons(Frame):
         self.__f = Frame(self)
 
         self._up_btn = Button(self.__f, text="Up")
-        self._up_btn.pack(side=BOTTOM, pady=pad_between_y)
+        self._up_btn.pack(side=TOP, pady=pad_between_y)
 
         self._delete_btn = Button(self.__f, text="Delete")
-        self._delete_btn.pack(side=BOTTOM, pady=pad_between_y)
+        self._delete_btn.pack(side=TOP, pady=pad_between_y)
 
         self._delete_btn = Button(self.__f, text="Down")
-        self._delete_btn.pack(side=BOTTOM)
+        self._delete_btn.pack(side=TOP)
 
         self.__f.pack(side='left')
 
@@ -101,24 +103,40 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
         self.__scrollbar_y = Scrollbar(self.__list_frame_full, orient=VERTICAL, width=10)
         self.__scrollbar_x = Scrollbar(self.__list_frame_with_x, orient=HORIZONTAL)
 
-        self.__listbox = Listbox(
-            master=self.__list_frame_with_x,
-            xscrollcommand=self.__scrollbar_x.set, 
-            yscrollcommand=self.__scrollbar_y.set,
-            width=80,
-            height=22,
+        columns = ("#1", "#2", "#3")
+        self.__listbox = ttk.Treeview(
+            self.__list_frame_with_x, 
+            show="headings", 
+            columns=columns,
+            height=18,
+            selectmode='browse',
         )
-        for f in self.__list.list:
-            self.__listbox.insert(END, f.path)
 
-        self.__action_btns = ChageListButtons(self.__list_frame_full)
-
+        self.__listbox.heading("#1", text="Artist", anchor='w')
+        self.__listbox.heading("#2", text="Title", anchor='w')
+        self.__listbox.heading("#3", text="File", anchor='w')
+        self.__listbox.configure(
+            yscrollcommand=self.__scrollbar_y.set,
+            xscrollcommand=self.__scrollbar_x.set
+        )
         self.__scrollbar_x.configure(command=self.__listbox.xview)
         self.__scrollbar_y.configure(command=self.__listbox.yview)
 
+        for f in self.__list.list:
+            self.__listbox.insert(
+                parent="",
+                index=END, 
+                values=[f.attr1, f.attr2, f.path]
+            )
 
-        self._answer_lbl.pack(side=TOP, fill=X, expand=True)
-        self.__list_frame_full.pack(side=TOP, fill=BOTH, expand=True)
+        self.__listbox.column("#1", minwidth=250)
+        self.__listbox.column("#2", minwidth=250)
+        self.__listbox.column("#3", minwidth=2048)
+
+        self.__action_btns = ChageListButtons(self.__list_frame_full, self.__list)
+
+        self._answer_lbl.pack(side=TOP, fill=X, expand=True, anchor='w')
+        self.__list_frame_full.pack(side=TOP, fill=BOTH, expand=False)
         
         self.__listbox.pack(side=TOP, fill=BOTH, expand=True)
         self.__scrollbar_x.pack(side=TOP, fill=X, expand=True)
@@ -127,5 +145,5 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
         self.__scrollbar_y.pack(side=LEFT, fill=Y, expand=True)
         self.__action_btns.pack(side=LEFT, fill=BOTH, expand=True)
 
-        self.geometry("730x500")
+        self.geometry("800x500")
         return super().body(master)
