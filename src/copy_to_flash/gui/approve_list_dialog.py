@@ -9,6 +9,8 @@ from copier import SourceFile
 class ListAdapter(object):
     def __init__(self, list:List[SourceFile]) -> None:
         self.list = list.copy()
+        self.__view = None
+        self.selected = ''
     
     def swap(self, i: int, j: int):
         if i < 0 or i >= len(self.list):
@@ -20,20 +22,41 @@ class ListAdapter(object):
         t = self.list[i]
         self.list[i] = self.list[j]
         self.list[j] = t
+        self.__update()
 
     def delete(self, i: int):
         if i < 0 or i >= len(self.list):
             raise ValueError("Incorrect index")
         del self.list[i]
+        self.__update()
     
-    def find(self, vv: str):
+    def find(self, vv: str) -> int:
         i = 0
         for v in self.list:
             if v.path == vv:
                 return i
             i += 1
 
-        return -1 
+        return -1
+    
+    def set_selected(self, s: str):
+        self.selected = s
+    
+    def set_view(self, v: ttk.Treeview):
+        self.__view = v
+        self.__update()
+    
+    def __update(self):
+        self.__view.delete(*self.__view.get_children())
+        for f in self.list:
+            i = self.__view.insert(
+                parent="",
+                index=END, 
+                values=[f.attr1, f.attr2, f.path]
+            )
+            if f.path == self.selected:
+                self.__view.selection_set(i)
+        
 
 class ApproveRemoveBeforeDialog(simpledialog.Dialog):
     def __init__(self, master, list: ListAdapter) -> None:
@@ -80,11 +103,10 @@ class ApproveRemoveBeforeDialog(simpledialog.Dialog):
 
 
 class ChageListButtons(Frame):
-    def __init__(self, master, list: ListAdapter, lst) -> None:
+    def __init__(self, master, list: ListAdapter) -> None:
         super().__init__(master)
         self.__list = list
-        self.__selected = ''
-
+        
         self.__f = Frame(self)
 
         self._up_btn = Button(self.__f, text="  Up  ", command=self.__on_up)
@@ -98,22 +120,21 @@ class ChageListButtons(Frame):
 
         self.__f.pack(side='left')
 
-    def __on_up(self):
-        indx = self.__list.find(self.__selected)
-        if indx > 0 or indx < len(self.__list) - 1:
+    def __on_up(self): 
+        indx = self.__list.find(self.__list.selected)
+        if indx > 0:
             self.__list.swap(indx, indx - 1)
     
     def __on_down(self):
-        indx = self.__list.find(self.__selected)
-        if indx < len(self.__list) - 1:
+        indx = self.__list.find(self.__list.selected)
+        if indx < len(self.__list.list) - 1:
             self.__list.swap(indx, indx + 1)
     
     def __on_delete(self):
-        indx = self.__list.find(self.__selected)
-        self.__list.delete(indx)
+        indx = self.__list.find(self.__list.selected)
+        if indx >= 0:
+            self.__list.delete(indx)
 
-    def set_selected(self, v):
-        self.__selected = v
 
 
 class ApproveBeforeCopyDialog(simpledialog.Dialog):
@@ -122,7 +143,7 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
         super().__init__(master, title='Check files before copy')
         
     def body(self, master: Frame):
-        self._answer_lbl = Label(master=self, text="Do you want copy next files in order to flash device?")
+        self._answer_lbl = Label(master=self, text="Do you want copy next files in next order to flash device?")
         self._answer_lbl.configure(compound='left')
 
         self.__list_frame_full = Frame(self)
@@ -150,19 +171,13 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
         self.__scrollbar_x.configure(command=self.__listbox.xview)
         self.__scrollbar_y.configure(command=self.__listbox.yview)
 
-        for f in self.__list.list:
-            self.__listbox.insert(
-                parent="",
-                index=END, 
-                values=[f.attr1, f.attr2, f.path]
-            )
-
         self.__listbox.column("#1", minwidth=250)
         self.__listbox.column("#2", minwidth=250)
         self.__listbox.column("#3", minwidth=2048)
 
-        self.__action_btns = ChageListButtons(self.__list_frame_full, self.__list, self.__listbox
-        )
+        self.__list.set_view(self.__listbox)
+
+        self.__action_btns = ChageListButtons(self.__list_frame_full, self.__list)
 
         self.__listbox.bind('<<TreeviewSelect>>', self.__on_select)
 
@@ -180,7 +195,12 @@ class ApproveBeforeCopyDialog(simpledialog.Dialog):
         return super().body(master)
 
     def __on_select(self, _):
-        id = self.__listbox.selection()[0]
+        item = self.__listbox.selection()
+        if not item:
+            self.__list.set_selected('')
+            return
+
+        id = item[0]
         v = self.__listbox.item(id)['values'][2]
         logging.debug('select path: {}'.format(v))
-        self.__action_btns.set_selected(v)
+        self.__list.set_selected(v)
