@@ -1,33 +1,67 @@
 import logging
+from tkinter import messagebox
 from typing import List
 
 from copier import CleanHandler, CopyHandler, ProgressTick, SourceFile
+from gui.widgets.column_list import ListAdapter
+from gui.dialogs.approve_copy import ApproveBeforeCopyDialog
+from gui.dialogs.approve_remove import ApproveRemoveBeforeDialog
+from gui.main_window import MainWindow
+
+
+class FileSourceListAdapter(ListAdapter):
+    def __init__(self, list: List[SourceFile]) -> None:
+        super().__init__(list)
+
+    def vals(self, o: SourceFile) -> List[str]:
+        return [o.attr1, o.attr2, o.path]
+
+    def columns(self) -> List[str]:
+        return ["Title", "Artist", "File"]
 
 
 class GUIClearHandler(CleanHandler):
-    def __init__(self, verbose: bool) -> None:
+    def __init__(self, window: MainWindow) -> None:
         super().__init__()
-        self.verbose = verbose
+        self.__window = window
 
     def on_before_clear(self, files: List[SourceFile]) -> bool:
-        print("Do you want clear destination before copy ({}) ?".format(len(files)))
-        if self.verbose:
-            for f in files:
-                print("\t{}".format(f.path))
-        return read_yes_no()
+        dlg = ApproveRemoveBeforeDialog(self.__window, files)
+        
+        if dlg.result:
+            self.__window.process.start_clean()
+        else:
+            messagebox.showinfo('Copying has been canceled. Device should be cleaned before.')
+            self.__window.process.reset()
+        
+        return dlg.result
     
     def on_process(self, tick: ProgressTick):
-        if self.verbose:
-            print("{} deleted".format(tick.file.path))
+        self.__window.process.on_process(tick)
 
     def on_finish(self, total: int):
-        if self.verbose:
-            print("Destination device was cleaned. Removed {}".format(total))
+        pass
+
 
 class GUIHandler(CopyHandler):
+    def __init__(self, window: MainWindow) -> None:
+        super().__init__()
+        self.__window = window
+    
+    def on_before_copy(self, files: List[SourceFile]) -> List[SourceFile]:
+        adapter = FileSourceListAdapter(files)
+        dlg = ApproveBeforeCopyDialog(self.__window, adapter)
+        
+        if dlg.result:
+            self.__window.process.start_copy()
+            return adapter.list 
+        else:
+            self.__window.process.reset()
+
     def on_process(self, tick: ProgressTick):
-        logging.debug("copy file: {}".format(tick.file.path))
-        print("[{}/{} ({}%)] {} - {}".format(tick.file_index, tick.total_files, tick.percent(), tick.file.attr1, tick.file.attr2))
+        self.__window.process.on_process(tick)
     
     def on_finish(self, total: int):
-        print("[{t}/{t}] (100%)".format(t=total))
+        messagebox.showinfo('Copying has been finished.')
+        self.__window.process.reset()
+

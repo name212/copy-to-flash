@@ -1,10 +1,9 @@
 import logging
-from math import ceil
-from tkinter import BOTH, LEFT, RIGHT, TOP, X
+from tkinter import BOTH, LEFT, TOP, X
 from tkinter.ttk import LabelFrame, Frame, Combobox, Label, Progressbar, Spinbox
 from typing import Dict, List
 from gui.controller import Controller
-from device import AvailableDevices, FlashDevice
+from device import AvailableDevices
 
 from copier import ProgressTick
 
@@ -13,20 +12,27 @@ pad_between_y = 5
 
 class ProcessOutput(LabelFrame):
     def __init__(self, master) -> None:
-        super().__init__(master=master, text="Remove/Copy")
+        super().__init__(master=master)
         self._file = Label(self, text='N/A')
         self._progress = Progressbar(self, maximum=100)
+
+        self.reset()
 
         self._file.pack(side=TOP, fill=X, expand=True)
         self._progress.pack(side=TOP, fill=X, expand=True)
     
+    def reset(self):
+        self.configure(text="Remove/Copy")
+        self._file.configure(text='N/A')
+        self._progress.configure(value=0)
+
     def start_copy(self):
-        self.configure(text="Copy")
+        self.configure(text="Copying")
         self._file.configure(text='N/A')
         self._progress.configure(value=0)
     
     def start_clean(self):
-        self.configure(text="Remove")
+        self.configure(text="Removing")
         self._file.configure(text='N/A')
         self._progress.configure(value=0)
     

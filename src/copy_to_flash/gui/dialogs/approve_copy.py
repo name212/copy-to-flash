@@ -1,23 +1,22 @@
-import logging
-from tkinter import BOTH, BOTTOM, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Button, Frame, Label, Listbox, Scrollbar, Toplevel, simpledialog, ttk
-from turtle import width
-from typing import List
-from gui.components import pad_between_y
+from tkinter import BOTH, HORIZONTAL, LEFT, TOP, VERTICAL, X, Y, Button, Frame, Label, Scrollbar, simpledialog
+from copy_to_flash.copier import SourceFile
 from gui.widgets.column_list import ListAdapter, SingleSelectedColumnList
+from .ok_cancel import OkCancelDialog
+from typing import List
 
 
 class ChageListButtons(Frame):
-    def __init__(self, master, list: ListAdapter) -> None:
+    def __init__(self, master, list: ListAdapter, button_pad_y = 5) -> None:
         super().__init__(master)
         self.__list = list
         
         self.__f = Frame(self)
 
         self._up_btn = Button(self.__f, text="  Up  ", command=self.__on_up)
-        self._up_btn.pack(side=TOP, pady=pad_between_y)
+        self._up_btn.pack(side=TOP, pady=button_pad_y)
 
         self._delete_btn = Button(self.__f, text="Delete", command=self.__on_delete)
-        self._delete_btn.pack(side=TOP, pady=pad_between_y)
+        self._delete_btn.pack(side=TOP, pady=button_pad_y)
 
         self._delete_btn = Button(self.__f, text=" Down ", command=self.__on_down)
         self._delete_btn.pack(side=TOP)
@@ -40,7 +39,7 @@ class ChageListButtons(Frame):
             self.__list.delete(indx)
 
 
-class ApproveBeforeCopyDialog(simpledialog.Dialog):
+class ApproveBeforeCopyDialog(OkCancelDialog):
     def __init__(self, master, list: ListAdapter) -> None:
         self.__list = list
         super().__init__(master, title='Check files before copy')

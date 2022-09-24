@@ -1,7 +1,7 @@
 import logging
-from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, messagebox
+from tkinter import BOTH, LEFT, RIGHT, TOP, X
 from tkinter.filedialog import askdirectory
-from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Separator, Spinbox
+from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Separator
 from copier import SourceFile
 from gui.dialogs.approve_copy import ApproveBeforeCopyDialog
 from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
@@ -80,11 +80,7 @@ class MainWindow(Frame):
             f.attr2 = "Artist {}".format(i)
             l.append(f)
         dlg = ApproveBeforeCopyDialog(self, FileSourceListAdapter(l))
-        
-        try:
-            self._controller.start_copy()
-        except BaseException as e:
-            messagebox.showerror("Error", str(e))
+        print(dlg.result)
 
     def _build(self):
         input_frame = self._build_input(self)
@@ -93,8 +89,8 @@ class MainWindow(Frame):
         l = Separator()
         l.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
-        self._process = ProcessOutput(self)
-        self._process.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
+        self.process = ProcessOutput(self)
+        self.process.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
         self._action_btn = Button(self, text="Start", command=self.__on_start_click)
         self._action_btn.pack(side=RIGHT, padx=_pad_between_x, pady=(0, _pad_between_y))

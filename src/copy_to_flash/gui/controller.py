@@ -2,24 +2,13 @@ import logging
 from tkinter import StringVar, IntVar
 from typing import List, Callable, Tuple
 
-from copier import CopyController, SourceFile
+from copier import CopyController
 from copiers.limit_size_dir_copier import LimitDirSizeCopier
 from copiers.simple_copier import SimpleCopier
 from source.dir import ListSource
 from source.music_sorter import MusicDirSource
 from gui.widgets.column_list import ListAdapter
 from device import FlashDevice, AvailableDevices
-
-
-class FileSourceListAdapter(ListAdapter):
-    def __init__(self, list: List[SourceFile]) -> None:
-        super().__init__(list)
-
-    def vals(self, o: SourceFile) -> List[str]:
-        return [o.attr1, o.attr2, o.path]
-
-    def columns(self) -> List[str]:
-        return ["Title", "Artist", "File"]
 
 
 class Controller(object):

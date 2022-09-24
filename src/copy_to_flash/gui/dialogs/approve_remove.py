@@ -1,9 +1,11 @@
 from tkinter import BOTH, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Frame, Label, Listbox, Scrollbar, simpledialog
 from typing import List
+from .ok_cancel import OkCancelDialog
 
 from copy_to_flash.copier import SourceFile
 
-class ApproveRemoveBeforeDialog(simpledialog.Dialog):
+
+class ApproveRemoveBeforeDialog(OkCancelDialog):
     def __init__(self, master, list: List[SourceFile]) -> None:
         self.__list = list
         super().__init__(master, title='Clear destination before copy')
@@ -27,7 +29,7 @@ class ApproveRemoveBeforeDialog(simpledialog.Dialog):
             height=22,
             state='disabled',
         )
-        for f in self.__list.list:
+        for f in self.__list:
             self.__listbox.insert(END, f.path)
 
         self.__scrollbar_x.configure(command=self.__listbox.xview)
@@ -43,6 +45,6 @@ class ApproveRemoveBeforeDialog(simpledialog.Dialog):
         self.__list_frame_with_x.pack(side=LEFT, fill=BOTH, expand=True)
         self.__scrollbar_y.pack(side=RIGHT, fill=Y, expand=True)
 
-        self.geometry("700x500")
+        self.geometry("800x500")
         return super().body(master)
 
