@@ -1,12 +1,11 @@
 import logging
 from tkinter import BOTH, LEFT, RIGHT, TOP, X, StringVar, messagebox
 from tkinter.filedialog import askdirectory
-from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Spinbox
+from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Label, Progressbar, Separator, Spinbox
 from copier import SourceFile
-from gui.approve_list_dialog import ApproveBeforeCopyDialog, ApproveRemoveBeforeDialog, ListAdapter
-from gui.widgets import Line
+from gui.dialogs.approve_copy import ApproveBeforeCopyDialog
 from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
-from gui.controller import Controller
+from gui.controller import Controller, FileSourceListAdapter
 
 _pad_between_x = 3
 _pad_between_y = 10
@@ -75,10 +74,12 @@ class MainWindow(Frame):
     def __on_start_click(self):
         l = []
         for i in range(1, 200):
-            p = "/path/sub/another/dir/suka/hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh/{}".format(i)
-            l.append(SourceFile(p))
-        dlg = ApproveBeforeCopyDialog(self, ListAdapter(l))
-
+            p = "/path/sub/another/dir/suka/hhhhhhhhh/{}".format(i)
+            f = SourceFile(p)
+            f.attr1 = "Title {}".format(i)
+            f.attr2 = "Artist {}".format(i)
+            l.append(f)
+        dlg = ApproveBeforeCopyDialog(self, FileSourceListAdapter(l))
         
         try:
             self._controller.start_copy()
@@ -89,7 +90,7 @@ class MainWindow(Frame):
         input_frame = self._build_input(self)
         input_frame.pack(side=TOP, fill=X, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
-        l = Line(self, width=2, color="#E4E4E4")
+        l = Separator()
         l.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
         self._process = ProcessOutput(self)

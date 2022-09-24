@@ -1,6 +1,7 @@
 from math import ceil
 from tkinter import Canvas
 
+
 class Line(Canvas):
     def __init__(self, master, cnf={}, width=3, color="black"):
         super().__init__(master, cnf, height=width)
@@ -14,3 +15,4 @@ class Line(Canvas):
         self.delete('all')
         y = ceil(self._width / 2.0)
         self.create_line(0, y, event.width, y, fill=self._color, width=self._width)
+
