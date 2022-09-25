@@ -96,6 +96,8 @@ def __build_device(device: dict) -> FlashDevice:
     if "children" in device:
         for child in device['children']:
             if "type" in child and child['type'] == "part":
+                if not child.get('mountpoint'):
+                    continue
                 part = __LinuxPartition(parent=flash_device,
                                         name=child.get('name'),
                                         mount=child.get('mountpoint'),
@@ -106,9 +108,6 @@ def __build_device(device: dict) -> FlashDevice:
     return flash_device
 
 
-class NotAvailableDestinationDevices(Exception):
-    pass
-
 def get_available_devices() -> List[FlashDevice]:
     block_devices = __get_block_devices()
     available_devices = []
@@ -118,6 +117,4 @@ def get_available_devices() -> List[FlashDevice]:
         if not type_dev or type_dev != "disk" or not removable:
             continue
         available_devices.append(__build_device(device))
-    if not available_devices:
-        raise NotAvailableDestinationDevices
     return available_devices

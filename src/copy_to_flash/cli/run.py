@@ -11,6 +11,9 @@ from device import FlashDevice, Partition
 from .input import choice_dest_partition, get_partition_from_device
 
 
+class NotAvailableDestinationDevices(Exception):
+    pass
+
 class ArgumentError(Exception):
     def __init__(self, msg: str) -> None:
         super().__init__(msg)
@@ -36,23 +39,25 @@ def run(available_devices: List[FlashDevice], version: str):
         version_str=version
     ).get_args()
 
-
-    logLvl = logging.WARN
+    
+    logLvl = logging.INFO
 
     if args.verbose:
         logLvl= logging.DEBUG
     
-    logging.basicConfig(stream=stdout, level=logLvl)
+    strfmt = '[%(asctime)s] [%(name)s] [%(levelname)s] > %(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    logging.basicConfig(stream=stdout, level=logLvl, format=strfmt, datefmt=datefmt)
 
     logging.debug("arguments={}".format(args))
-
-    if not available_devices:
-        raise ArgumentError("")
 
     if not args.source_dir or args.source_dir == "":
         raise ArgumentError("source is required")
     
     part = args.dest_part
+
+    if not available_devices:
+        raise NotAvailableDestinationDevices
 
     if not args.dest_part:
         part = __get_destination_partition(available_devices, args)

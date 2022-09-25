@@ -1,7 +1,10 @@
+import logging
 import platform
+import sys
 from typing import List
 
-from cli.run import ArgumentError, run as cli_run
+from cli.run import ArgumentError, NotAvailableDestinationDevices, run as cli_run
+from gui.app import App
 from device import FlashDevice
 
 _VERSION = "0.1.0"
@@ -20,12 +23,18 @@ def available_devices() -> List[FlashDevice]:
 
 
 if __name__ == "__main__":
-    devices = available_devices()
+    start_gui = False
     try:
+        devices = available_devices()
         cli_run(devices, _VERSION)
-    except ArgumentError as e:
-        # todo gui here
-        raise e
-    except:
-        raise     
+    except (NotAvailableDestinationDevices, ArgumentError) as e:
+        start_gui = True
+    except BaseException as e:
+        logging.error("Got error {}".format(e))
+        sys.exit(1)    
+    
+    if start_gui:
+        app = App(_VERSION)
+        app.run(available_devices)
+
 
