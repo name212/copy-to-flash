@@ -1,4 +1,4 @@
-from multiprocessing import Queue
+from queue import Queue
 from tkinter import messagebox
 from typing import List
 
@@ -67,6 +67,8 @@ class GUICopyHandler(CopyHandler):
         self.__window = window
     
     def on_before_copy(self, files: List[SourceFile]) -> List[SourceFile]:
+        self.__window.get_process().wait_finish()
+
         q = Queue(1)
         def run(q: Queue):
             adapter = FileSourceListAdapter(files)
@@ -89,9 +91,12 @@ class GUICopyHandler(CopyHandler):
         self.__window.get_process().on_process(tick)
     
     def on_finish(self, total: int):
-        def run():
-            t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
-            self.__window.get_process().on_process(t)
+        t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
+        self.__window.get_process().on_process(t)
+
+        self.__window.get_process().wait_finish()
+
+        def run():    
             messagebox.showinfo(title='Done', message='Copying has been finished.')
             self.__window.switch_to_start()
         

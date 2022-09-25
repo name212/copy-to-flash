@@ -1,5 +1,5 @@
 import logging
-from multiprocessing import Queue
+from queue import Queue
 from tkinter import BOTH, LEFT, TOP, X, RIGHT, StringVar
 from tkinter.ttk import LabelFrame, Button, Entry, Frame, Combobox, Label, Progressbar, Spinbox
 from typing import Dict, List
@@ -43,17 +43,21 @@ class ProcessOutput(LabelFrame):
 
     def __check_queue(self, event = None):
         if not self.__event_queue.empty():
-            tick: ProgressTick = self.__event_queue.get_nowait()
+            tick: ProgressTick = self.__event_queue.get()
             t = tick.file.path
             if tick.file.attr1 and tick.file.attr2:
                 t = "{} - {} [{}]".format(tick.file.attr1, tick.file.attr2, t)
             self._file.configure(text=t)
             self._progress.configure(value=tick.percent())
+            self.__event_queue.task_done()
           
         self.after(20, self.__check_queue)
 
     def on_process(self, tick: ProgressTick):
         self.__event_queue.put_nowait(tick)
+
+    def wait_finish(self):
+        self.__event_queue.join()
         
         
 class CopierAlgoInput(LabelFrame):
