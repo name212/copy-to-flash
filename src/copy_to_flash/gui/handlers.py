@@ -1,3 +1,4 @@
+from multiprocessing import Queue
 from tkinter import messagebox
 from typing import List
 
@@ -15,6 +16,9 @@ class Window(object):
         raise NotImplementedError()
     
     def switch_to_cancel(self):
+        raise NotImplementedError()
+
+    def run_after(self, ms: int, fun):
         raise NotImplementedError()
 
 
@@ -35,21 +39,25 @@ class GUIClearHandler(CleanHandler):
         self.__window = window
 
     def on_before_clear(self, files: List[SourceFile]) -> bool:
-        dlg = ApproveRemoveBeforeDialog(self.__window, files)
+        q = Queue(1)
+        def run(q: Queue):
+            dlg = ApproveRemoveBeforeDialog(self.__window, files)
+            if dlg.result:
+                self.__window.get_process().start_clean()
+            else:
+                messagebox.showinfo(title='Canceled', message='Copying has been canceled. Device should be cleaned before.')
+                self.__window.switch_to_start()
+            q.put(dlg.result)
         
-        if dlg.result:
-            self.__window.get_process().start_clean()
-        else:
-            messagebox.showinfo(title='Canceled', message='Copying has been canceled. Device should be cleaned before.')
-            self.__window.switch_to_start()
+        self.__window.run_after(250, lambda: run(q))
         
-        return dlg.result
+        return q.get()
     
     def on_process(self, tick: ProgressTick):
         self.__window.get_process().on_process(tick)
 
     def on_finish(self, total: int):
-        t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
+        t = ProgressTick(SourceFile(''), file_index=1, total_files=1)
         self.__window.get_process().on_process(t)
 
 
@@ -59,22 +67,34 @@ class GUICopyHandler(CopyHandler):
         self.__window = window
     
     def on_before_copy(self, files: List[SourceFile]) -> List[SourceFile]:
-        adapter = FileSourceListAdapter(files)
-        dlg = ApproveBeforeCopyDialog(self.__window, adapter)
+        q = Queue(1)
+        def run(q: Queue):
+            adapter = FileSourceListAdapter(files)
+            dlg = ApproveBeforeCopyDialog(self.__window, adapter)
+
+            if dlg.result:
+                self.__window.get_process().start_copy()
+                self.__window.switch_to_cancel()
+                q.put(adapter.list) 
+            else:
+                self.__window.switch_to_start()
+                q.put([])
         
-        if dlg.result:
-            self.__window.get_process().start_copy()
-            self.__window.switch_to_cancel()
-            return adapter.list 
-        else:
-            self.__window.switch_to_start()
+        self.__window.run_after(250, lambda: run(q))
+        
+        return q.get()
+
 
     def on_process(self, tick: ProgressTick):
         self.__window.get_process().on_process(tick)
     
     def on_finish(self, total: int):
-        t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
-        self.__window.get_process().on_process(t)
-        messagebox.showinfo(title='Done', message='Copying has been finished.')
-        self.__window.switch_to_start()
+        def run():
+            t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
+            self.__window.get_process().on_process(t)
+            messagebox.showinfo(title='Done', message='Copying has been finished.')
+            self.__window.switch_to_start()
+        
+        self.__window.run_after(1000, run)
+
 

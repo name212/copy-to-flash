@@ -78,6 +78,13 @@ class Controller(object):
         source = ListSource(sorter.paths_in_order())
 
         self._copier_controller.set_copier(copier)
+        t = Thread(
+            target=self._copier_controller.copy,
+            kwargs={
+                'source': source, 
+                'destination_dir': dest_dir,
+            } 
+        )
         
-        self._copier_controller.copy(source=source, destination_dir=dest_dir)
+        t.start()
     

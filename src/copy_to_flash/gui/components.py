@@ -1,4 +1,5 @@
 import logging
+from multiprocessing import Queue
 from tkinter import BOTH, LEFT, TOP, X
 from tkinter.ttk import LabelFrame, Frame, Combobox, Label, Progressbar, Spinbox
 from typing import Dict, List
@@ -13,13 +14,16 @@ pad_between_y = 5
 class ProcessOutput(LabelFrame):
     def __init__(self, master) -> None:
         super().__init__(master=master)
-        self._file = Label(self, text='N/A')
+        self._file = Label(self, text='N/A', wraplength=350, justify=LEFT)
         self._progress = Progressbar(self, maximum=100)
+        self.__event_queue = Queue()
 
         self.reset()
 
         self._file.pack(side=TOP, fill=X, expand=True)
         self._progress.pack(side=TOP, fill=X, expand=True)
+
+        self.after(20, self.__check_queue)
     
     def reset(self):
         self.configure(text="Remove/Copy")
@@ -35,14 +39,21 @@ class ProcessOutput(LabelFrame):
         self.configure(text="Removing")
         self._file.configure(text='N/A')
         self._progress.configure(value=0)
-    
+
+    def __check_queue(self, event = None):
+        if not self.__event_queue.empty():
+            tick: ProgressTick = self.__event_queue.get_nowait()
+            t = tick.file.path
+            if tick.file.attr1 and tick.file.attr2:
+                t = "{} - {} [{}]".format(tick.file.attr1, tick.file.attr2, t)
+            self._file.configure(text=t)
+            self._progress.configure(value=tick.percent())
+          
+        self.after(20, self.__check_queue)
+
     def on_process(self, tick: ProgressTick):
-        t = tick.file.path
-        if tick.file.attr1 and tick.file.attr2:
-            t = "{} - {} [{}]".format(tick.file.attr1, tick.file.attr2, t)
-        self._file.configure(text=t)
-        self._progress.configure(value=tick.percent())
-        self.master.update()
+        self.__event_queue.put_nowait(tick)
+        
         
 class CopierAlgoInput(LabelFrame):
     def __init__(self, master, controller: Controller) -> None:

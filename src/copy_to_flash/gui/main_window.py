@@ -103,3 +103,6 @@ class MainWindow(Frame, Window):
     
     def get_process(self) -> ProcessOutput:
         return self.process
+    
+    def run_after(self, ms: int, fun):
+        self.after(ms, fun)
