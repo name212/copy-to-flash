@@ -1,10 +1,11 @@
 import logging
 from multiprocessing import Queue
-from tkinter import BOTH, LEFT, TOP, X
-from tkinter.ttk import LabelFrame, Frame, Combobox, Label, Progressbar, Spinbox
+from tkinter import BOTH, LEFT, TOP, X, RIGHT, StringVar
+from tkinter.ttk import LabelFrame, Button, Entry, Frame, Combobox, Label, Progressbar, Spinbox
 from typing import Dict, List
 from gui.controller import Controller
 from device import AvailableDevices
+from tkinter.filedialog import askdirectory
 
 from copier import ProgressTick
 
@@ -26,17 +27,17 @@ class ProcessOutput(LabelFrame):
         self.after(20, self.__check_queue)
     
     def reset(self):
-        self.configure(text="Remove/Copy")
+        self.configure(text='Remove/Copy')
         self._file.configure(text='N/A')
         self._progress.configure(value=0)
 
     def start_copy(self):
-        self.configure(text="Copying")
+        self.configure(text='Copying')
         self._file.configure(text='N/A')
         self._progress.configure(value=0)
     
     def start_clean(self):
-        self.configure(text="Removing")
+        self.configure(text='Removing')
         self._file.configure(text='N/A')
         self._progress.configure(value=0)
 
@@ -57,12 +58,12 @@ class ProcessOutput(LabelFrame):
         
 class CopierAlgoInput(LabelFrame):
     def __init__(self, master, controller: Controller) -> None:
-        super().__init__(master, text="Copier")
+        super().__init__(master, text='Copier')
 
         copiers_names, val = controller.copiers()
         self._lds_title = copiers_names[1]
 
-        self._copier_combo = Combobox(self, state="readonly", values=copiers_names, textvariable=val)
+        self._copier_combo = Combobox(self, state='readonly', values=copiers_names, textvariable=val)
         self._copier_combo.set(self._lds_title)
         self._copier_combo.bind('<<ComboboxSelected>>', self.modified)
 
@@ -70,7 +71,7 @@ class CopierAlgoInput(LabelFrame):
 
         self._lds_f = Frame(self)
 
-        l = Label(self._lds_f, text="Per dir")
+        l = Label(self._lds_f, text='Per dir')
         self._per_dir_spin = Spinbox(self._lds_f, from_=1, to=100000, textvariable=controller.dir_limit_size)
         self._per_dir_spin.set(512)
         l.pack(side=LEFT, padx=(0, pad_between_x))
@@ -85,10 +86,20 @@ class CopierAlgoInput(LabelFrame):
     def show_lsd_input_frame(self, is_show):
         if is_show:
             self._lds_f.pack(side=TOP, fill=X, expand=True, after=self._copier_combo)
-            logging.debug("Show lds input")
+            logging.debug('Show lds input')
         else: 
             self._lds_f.pack_forget()
-            logging.debug("Hide lds input")
+            logging.debug('Hide lds input')
+    
+    def readonly(self, i = True):
+        copier_combo = 'readonly'
+        spin = 'normal'
+        if i:
+            copier_combo = 'disabled'
+            spin = 'disabled'
+        
+        self._copier_combo.configure(state=copier_combo)
+        self._per_dir_spin.configure(state=spin)
 
 class DestinationPartitionInput(LabelFrame):
     def __init__(self, master, available_devices: AvailableDevices) -> None:
@@ -134,3 +145,39 @@ class DestinationPartitionInput(LabelFrame):
     def destroy(self) -> None:
         self.__available_devices.stop_watch()
         return super().destroy()
+
+    def readonly(self, i = True):
+        devices_combo = 'readonly'
+        if i:
+            devices_combo = 'disabled'
+        
+        self.__desdir_entry_combo.configure(state=devices_combo)
+
+
+class SourceDirInput(LabelFrame):
+    def __init__(self, master, source_dir: StringVar) -> None:
+        super().__init__(master, text='Source directory from copy')
+        self.__source_dir = source_dir
+
+        self.__source_dir_entry = Entry(self, textvariable=self.__source_dir)
+        
+        self.__ask_dir_btn = Button(self, text='Choice dir...')
+        self.__ask_dir_btn.config(command=self._on_click_choice_dir)
+
+        self.__source_dir_entry.pack(side=LEFT, fill=BOTH, expand=True)
+        self.__ask_dir_btn.pack(side=RIGHT, padx=(pad_between_x, 0))
+
+    def _on_click_choice_dir(self):
+        dir = askdirectory(title='Choice source directory')
+        logging.debug('Choicen source dir:{}'.format(dir))
+        self.__source_dir.set(dir)
+
+    def readonly(self, i = True):
+        button = 'normal'
+        entry = 'normal'
+        if i:
+            button = 'disabled'
+            entry = 'readonly'
+        
+        self.__ask_dir_btn.configure(state=button)
+        self.__source_dir_entry.configure(state=entry)
