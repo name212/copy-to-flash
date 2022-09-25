@@ -2,20 +2,21 @@ import logging
 from tkinter import BOTH, LEFT, RIGHT, TOP, X
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Separator
-from copier import SourceFile
-from gui.dialogs.approve_copy import ApproveBeforeCopyDialog
+from gui.handlers import GUIClearHandler, GUICopyHandler, Window
 from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
-from gui.controller import Controller, FileSourceListAdapter
+from gui.controller import Controller
 
 _pad_between_x = 3
 _pad_between_y = 10
 _pad_between_yy = 5
 
-class MainWindow(Frame):
+class MainWindow(Frame, Window):
     def __init__(self, master, controller: Controller): 
         super().__init__(master)
 
-        self._controller = controller        
+        self._controller = controller
+        self._controller.set_clear_handler(GUIClearHandler(self))
+        self._controller.set_copy_handler(GUICopyHandler(self))        
         
         self._build()
 
@@ -52,13 +53,13 @@ class MainWindow(Frame):
     def _build_input(self, parent):
         input_frame = Frame(parent)
 
-        self.__available_devices = self._controller.get_available_devices()
-
-        self.__dest_dir_input = DestinationPartitionInput(input_frame, self.__available_devices)
-        self.__dest_dir_input.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)
-
         container = self._build_source_dir_input(input_frame)
         container.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)
+
+        self.__available_devices = self._controller.get_available_devices()
+                
+        self.__dest_dir_input = DestinationPartitionInput(input_frame, self.__available_devices)
+        self.__dest_dir_input.pack(side=TOP, fill=X, expand=True, pady=_pad_between_yy)
 
         copy_settings = Frame(input_frame)
         container = self._build_sorter_input(copy_settings)
@@ -71,28 +72,34 @@ class MainWindow(Frame):
         self.input_frame = input_frame
         return input_frame
     
-    def __on_start_click(self):
-        l = []
-        for i in range(1, 200):
-            p = "/path/sub/another/dir/suka/hhhhhhhhh/{}".format(i)
-            f = SourceFile(p)
-            f.attr1 = "Title {}".format(i)
-            f.attr2 = "Artist {}".format(i)
-            l.append(f)
-        dlg = ApproveBeforeCopyDialog(self, FileSourceListAdapter(l))
-        print(dlg.result)
-
     def _build(self):
         input_frame = self._build_input(self)
         input_frame.pack(side=TOP, fill=X, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
-        l = Separator()
+        l = Separator(self)
         l.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
         self.process = ProcessOutput(self)
         self.process.pack(side=TOP, fill=BOTH, expand=True, padx=_pad_between_x, pady=_pad_between_y)
 
-        self._action_btn = Button(self, text="Start", command=self.__on_start_click)
+        self._action_btn = Button(self)
+        self.switch_to_start()
         self._action_btn.pack(side=RIGHT, padx=_pad_between_x, pady=(0, _pad_between_y))
 
         self.pack(side=TOP, fill=X, expand=True)
+
+    def switch_to_cancel(self):
+        self._action_btn.configure(
+            text="Cancel",
+            command=self._controller.cancel
+        )
+    
+    def switch_to_start(self):
+        self.process.reset()
+        self._action_btn.configure(
+            text="Start",
+            command=self._controller.start_copy
+        )
+    
+    def get_process(self) -> ProcessOutput:
+        return self.process

@@ -1,3 +1,4 @@
+import logging
 from tkinter import simpledialog
 
 class OkCancelDialog(simpledialog.Dialog):

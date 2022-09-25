@@ -52,8 +52,11 @@ class AvailableDevices(object):
         self.__on_change_available_devices: Callable[[List[str], None]] = None
 
         self.__check_run_lock = Lock()
+
+        self.__check_available_devices()
+
         self.__timer = Multitimer(2.0, self.__check_available_devices)
-        self.__timer.start(True)
+        self.__timer.start()
    
     def set_on_available_devices_changed(self, fn: Callable[[List[str]], None]):
         self.__lock.acquire()
@@ -91,6 +94,18 @@ class AvailableDevices(object):
         self.__lock.release()
 
         return result
+
+    def get_mounts_labels(self) -> Dict[str, str]:
+        self.__lock.acquire()
+        
+        mounts = []
+        for k in self.__label_to_dest_dir:
+            mounts.append(k)
+        mounts.sort()
+        
+        self.__lock.release()
+
+        return mounts
     
     def stop_watch(self):
         self.__timer.stop()
@@ -156,4 +171,4 @@ class AvailableDevices(object):
         if not self.__label_to_dest_dir.get(self.__choiced_dir):
             old = self.__choiced_dir
             self.__choiced_dir = ''
-            logging.warning('choiced dir {} is incorrect. It was cleaned'.format(old))
+            logging.warning('choiced dir "{}" is incorrect. It was cleaned'.format(old))

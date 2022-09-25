@@ -39,8 +39,8 @@ def run(available_devices: List[FlashDevice], version: str):
         version_str=version
     ).get_args()
 
-
-    logLvl = logging.WARN
+    
+    logLvl = logging.INFO
 
     if args.verbose:
         logLvl= logging.DEBUG

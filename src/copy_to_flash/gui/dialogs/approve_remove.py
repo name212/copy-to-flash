@@ -2,7 +2,7 @@ from tkinter import BOTH, END, HORIZONTAL, LEFT, RIGHT, TOP, VERTICAL, X, Y, Fra
 from typing import List
 from .ok_cancel import OkCancelDialog
 
-from copy_to_flash.copier import SourceFile
+from copier import SourceFile
 
 
 class ApproveRemoveBeforeDialog(OkCancelDialog):
@@ -27,7 +27,6 @@ class ApproveRemoveBeforeDialog(OkCancelDialog):
             yscrollcommand=self.__scrollbar_y.set,
             width=80,
             height=22,
-            state='disabled',
         )
         for f in self.__list:
             self.__listbox.insert(END, f.path)

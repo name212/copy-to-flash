@@ -1,8 +1,6 @@
 from tkinter import BOTH, HORIZONTAL, LEFT, TOP, VERTICAL, X, Y, Button, Frame, Label, Scrollbar, simpledialog
-from copy_to_flash.copier import SourceFile
 from gui.widgets.column_list import ListAdapter, SingleSelectedColumnList
 from .ok_cancel import OkCancelDialog
-from typing import List
 
 
 class ChageListButtons(Frame):

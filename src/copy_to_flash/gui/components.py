@@ -42,6 +42,7 @@ class ProcessOutput(LabelFrame):
             t = "{} - {} [{}]".format(tick.file.attr1, tick.file.attr2, t)
         self._file.configure(text=t)
         self._progress.configure(value=tick.percent())
+        self.master.update()
         
 class CopierAlgoInput(LabelFrame):
     def __init__(self, master, controller: Controller) -> None:

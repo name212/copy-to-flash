@@ -1,4 +1,3 @@
-import logging
 from tkinter import messagebox
 from typing import List
 
@@ -6,7 +5,17 @@ from copier import CleanHandler, CopyHandler, ProgressTick, SourceFile
 from gui.widgets.column_list import ListAdapter
 from gui.dialogs.approve_copy import ApproveBeforeCopyDialog
 from gui.dialogs.approve_remove import ApproveRemoveBeforeDialog
-from gui.main_window import MainWindow
+from gui.components import ProcessOutput
+
+class Window(object):
+    def get_process(self) -> ProcessOutput:
+        raise NotImplementedError()
+    
+    def switch_to_start(self):
+        raise NotImplementedError()
+    
+    def switch_to_cancel(self):
+        raise NotImplementedError()
 
 
 class FileSourceListAdapter(ListAdapter):
@@ -21,7 +30,7 @@ class FileSourceListAdapter(ListAdapter):
 
 
 class GUIClearHandler(CleanHandler):
-    def __init__(self, window: MainWindow) -> None:
+    def __init__(self, window: Window) -> None:
         super().__init__()
         self.__window = window
 
@@ -29,22 +38,23 @@ class GUIClearHandler(CleanHandler):
         dlg = ApproveRemoveBeforeDialog(self.__window, files)
         
         if dlg.result:
-            self.__window.process.start_clean()
+            self.__window.get_process().start_clean()
         else:
-            messagebox.showinfo('Copying has been canceled. Device should be cleaned before.')
-            self.__window.process.reset()
+            messagebox.showinfo(title='Canceled', message='Copying has been canceled. Device should be cleaned before.')
+            self.__window.switch_to_start()
         
         return dlg.result
     
     def on_process(self, tick: ProgressTick):
-        self.__window.process.on_process(tick)
+        self.__window.get_process().on_process(tick)
 
     def on_finish(self, total: int):
-        pass
+        t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
+        self.__window.get_process().on_process(t)
 
 
-class GUIHandler(CopyHandler):
-    def __init__(self, window: MainWindow) -> None:
+class GUICopyHandler(CopyHandler):
+    def __init__(self, window: Window) -> None:
         super().__init__()
         self.__window = window
     
@@ -53,15 +63,18 @@ class GUIHandler(CopyHandler):
         dlg = ApproveBeforeCopyDialog(self.__window, adapter)
         
         if dlg.result:
-            self.__window.process.start_copy()
+            self.__window.get_process().start_copy()
+            self.__window.switch_to_cancel()
             return adapter.list 
         else:
-            self.__window.process.reset()
+            self.__window.switch_to_start()
 
     def on_process(self, tick: ProgressTick):
-        self.__window.process.on_process(tick)
+        self.__window.get_process().on_process(tick)
     
     def on_finish(self, total: int):
-        messagebox.showinfo('Copying has been finished.')
-        self.__window.process.reset()
+        t = ProgressTick(SourceFile(''), file_index=total, total_files=total)
+        self.__window.get_process().on_process(t)
+        messagebox.showinfo(title='Done', message='Copying has been finished.')
+        self.__window.switch_to_start()
 
