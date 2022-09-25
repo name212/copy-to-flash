@@ -80,7 +80,7 @@ class GUICopyHandler(CopyHandler):
                 q.put(adapter.list) 
             else:
                 self.__window.switch_to_start()
-                q.put([])
+                q.put(None)
         
         self.__window.run_after(250, lambda: run(q))
         

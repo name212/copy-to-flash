@@ -47,6 +47,8 @@ class ProgressTick(object):
         self.total_files = total_files
     
     def percent(self) -> int:
+        if self.total_files == 0:
+            return 0
         return floor((self.file_index * 1.0 / self.total_files) * 100)
 
 class ProcessHandler(object):
@@ -190,10 +192,13 @@ class CopyController(object):
             return
 
         files = self.__copy_handler.on_before_copy(files)
+        if files is None:
+            return
 
         copy = lambda f: self.__copier.copy(f.path, destination_dir)
         
         self.__process_list(files, copy, self.__copy_handler)
 
-        self.__copy_handler.on_finish(len(files))
+        if not self.is_canceled():
+            self.__copy_handler.on_finish(len(files))
  

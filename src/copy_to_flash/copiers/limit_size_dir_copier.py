@@ -32,7 +32,7 @@ class LimitDirSizeCopier(CopyAlgo):
         if not sub_dir_name_gen:
             self._name_gen = _NumberDirNameGenerator(0, max_files_in_dir)
 
-        # чтобы при первом вызове copy создать поддиректорию
+        # for first directory
         self._cur_files_in_sub_dir = max_files_in_dir + 1
 
         self._cur_name = ''
@@ -44,7 +44,6 @@ class LimitDirSizeCopier(CopyAlgo):
             self._cur_files_in_sub_dir = 0
 
         cur_dir_path = os.path.join(destination_dir_path, self._cur_name)
-        # на всякий пожарный добавим / в конец
         cur_dir_path = os.path.join(cur_dir_path, '')
         if not os.path.exists(cur_dir_path):
             os.mkdir(cur_dir_path)
