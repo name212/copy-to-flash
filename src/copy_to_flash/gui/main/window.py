@@ -3,7 +3,7 @@ from tkinter import BOTH, LEFT, RIGHT, TOP, X
 from tkinter.filedialog import askdirectory
 from tkinter.ttk import LabelFrame, Frame, Entry, Button, Combobox, Separator
 from gui.handlers import GUIClearHandler, GUICopyHandler, Window
-from gui.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
+from gui.main.components import CopierAlgoInput, ProcessOutput, DestinationPartitionInput
 from gui.controller import Controller
 
 _pad_between_x = 3

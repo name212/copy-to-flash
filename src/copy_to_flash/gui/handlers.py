@@ -6,7 +6,7 @@ from copier import CleanHandler, CopyHandler, ProgressTick, SourceFile
 from gui.widgets.column_list import ListAdapter
 from gui.dialogs.approve_copy import ApproveBeforeCopyDialog
 from gui.dialogs.approve_remove import ApproveRemoveBeforeDialog
-from gui.components import ProcessOutput
+from gui.main.components import ProcessOutput
 
 class Window(object):
     def get_process(self) -> ProcessOutput:

@@ -3,7 +3,7 @@ from typing import List, Callable
 from gui.controller import Controller
 
 from device import FlashDevice
-from .main_window import MainWindow
+from .main.window import MainWindow
 
 
 class App(Tk):
