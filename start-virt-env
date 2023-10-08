@@ -11,8 +11,20 @@ fi
 export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
 export WORKON_HOME=$PWD/.virtualenvs
 export PROJECT_HOME=$PWD
-export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
-source ~/.local/bin/virtualenvwrapper.sh
+
+RED_COLOR='\033[0;31m'
+NO_COLOR='\033[0m' 
+
+if [ -f /usr/share/virtualenvwrapper/virtualenvwrapper.sh ]; then
+  export VIRTUALENVWRAPPER_VIRTUALENV=/usr/bin/virtualenv
+  source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
+elif [-f ~/.local/bin/virtualenvwrapper.sh ]; then
+  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
+  source ~/.local/bin/virtualenvwrapper.sh
+else
+ echo -e "${RED_COLOR}ERROR${NO_COLOR} cannot not find virtualen. Please install it"
+ exit 1
+fi
 
 if ! workon | grep -q run_env; then
   mkvirtualenv -r requirements.txt run_env
@@ -21,9 +33,6 @@ fi
 workon run_env
 
 alias d=deactivate
-
-RED_COLOR='\033[0;31m'
-NO_COLOR='\033[0m' 
 
 if ! python -c "import sys; sys.exit(0) if sys.version_info.major == $REQ_PYTHON_MAJ and sys.version_info.minor >= $REQ_PYTHON_MINOR else sys.exit(1)"; then
   >&2 echo -e "${RED_COLOR}ERROR${NO_COLOR} Require pyhon >= ${REQ_PYTHON_MAJ}.${REQ_PYTHON_MINOR} Exit from virtual env"
