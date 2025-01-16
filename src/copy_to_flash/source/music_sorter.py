@@ -1,5 +1,6 @@
 import logging, sys
 from typing import List
+import os
 
 from pymediainfo import MediaInfo
 from operator import itemgetter
@@ -49,6 +50,8 @@ class MusicTrackSorter(Sorter):
             if artist:
                 artist_value = artist
         logging.debug("sorting_value={}; save={} artist_val={}".format(sort_value, save, artist_value))
+        if not sort_value:
+            sort_value=os.path.basename(path)
         if sort_value and save:
             self.__path_list.append({'path': path, 'title': sort_value, 'artist': artist_value})
         return None

@@ -1,6 +1,7 @@
 import logging
 import platform
 import sys
+from sys import stdout
 from typing import List
 
 from cli.run import ArgumentError, NotAvailableDestinationDevices, run as cli_run
@@ -23,7 +24,11 @@ def available_devices() -> List[FlashDevice]:
 
 
 if __name__ == "__main__":
-    start_gui = False
+    strfmt = '[%(asctime)s] [%(name)s] [%(levelname)s] > %(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    
+    logging.basicConfig(stream=stdout, level=logging.DEBUG, format=strfmt, datefmt=datefmt)
+    
     try:
         devices = available_devices()
         cli_run(devices, _VERSION)
